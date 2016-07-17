@@ -21,10 +21,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 // TODO: server stuff in async
 
-public class SignUp extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity {
 
     EditText phoneNumber;
     EditText password1;
@@ -158,8 +159,13 @@ public class SignUp extends AppCompatActivity {
 
     private void saveToken(String token) {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("token", token);
-        setResult(Activity.RESULT_OK, returnIntent);
+        if (TextUtils.isEmpty(token)) {
+            returnIntent.putExtra("success", false);
+        } else {
+            returnIntent.putExtra("success", true);
+            returnIntent.putExtra("token", token);
+            setResult(Activity.RESULT_OK, returnIntent);
+        }
         finish();
     }
 

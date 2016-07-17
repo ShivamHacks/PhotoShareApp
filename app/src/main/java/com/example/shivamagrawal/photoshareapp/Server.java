@@ -25,6 +25,7 @@ public class Server {
     // Groups and events
     public static String createGroupURL = getFullURL("/api/groups/newGroup");
     public static String createEventURL = getFullURL("/api/groups/createEvent");
+    public static String getAllGroupsURL = getFullURL("/api/groups/getAllGroups");
     public static String getGroupURL = getFullURL("/api/groups/getGroup");
     public static String addMembersURL = getFullURL("/api/groups/addMembers");
     public static String deleteGroupURL = getFullURL("/api/groups/deleteGroup");

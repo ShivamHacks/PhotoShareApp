@@ -3,6 +3,7 @@ package com.example.shivamagrawal.photoshareapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.content.Intent;
@@ -11,7 +12,7 @@ import android.content.SharedPreferences;
 import android.app.Activity;
 import android.util.Log;
 
-public class LoginOrSignUp extends AppCompatActivity {
+public class LoginOrSignUpActivity extends AppCompatActivity {
 
     Button login;
     Button signup;
@@ -37,7 +38,7 @@ public class LoginOrSignUp extends AppCompatActivity {
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent signUp = new Intent(context, SignUp.class);
+                Intent signUp = new Intent(context, SignUpActivity.class);
                 startActivityForResult(signUp, Statics.tokenResultCode);
             }
         });
@@ -51,9 +52,12 @@ public class LoginOrSignUp extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
-                Log.d("TOKEN 1", data.getStringExtra("token"));
-                editor.putString("token", data.getStringExtra("token"));
-                editor.commit();
+                if (data.getBooleanExtra("success", false)) {
+                    String token = data.getStringExtra("token");
+                    editor.putString("token", token);
+                    editor.putBoolean("loggedIn", true);
+                    editor.commit();
+                }
                 finish();
             }
         }
