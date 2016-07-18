@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".GroupActivity">
+
+    <item
+        android:id="@+id/action_group_add"
+        android:orderInCategory="100"
+        android:title="Add Event"
+        android:icon="@drawable/ic_add_white_24dp"
+        app:showAsAction="ifRoom">
+    </item>
+
+    <item
+        android:id="@+id/action_group_settings"
+        android:orderInCategory="200"
+        android:title="Settings"
+        android:icon="@drawable/ic_settings_white_24dp"
+        app:showAsAction="ifRoom">
+    </item>
+
+</menu>

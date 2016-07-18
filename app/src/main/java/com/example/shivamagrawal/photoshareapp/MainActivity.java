@@ -1,5 +1,7 @@
 package com.example.shivamagrawal.photoshareapp;
 
+import android.graphics.Color;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -9,20 +11,59 @@ import android.content.Intent;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.util.Log;
+
+import java.util.List;
+import java.util.ArrayList;
+import com.example.shivamagrawal.photoshareapp.Objects.Group;
+import com.example.shivamagrawal.photoshareapp.Objects.GroupAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
+    SwipeRefreshLayout srl;
+    ListView groupsList;
+    GroupAdapter groupAdapter;
+    List<Group> groups;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = this;
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
 
-        init();
+        getGroups(); // Load groups
+        groupsList = (ListView) findViewById(R.id.list_groups);
+        groupsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent group = new Intent(context, GroupActivity.class);
+                startActivity(group);
+            }
+        });
+        groupAdapter = new GroupAdapter(this, R.layout.group_item_layout, groups);
+        groupsList.setAdapter(groupAdapter);
+
+        srl = (SwipeRefreshLayout) findViewById(R.id.list_groups_swipeContainer);
+        srl.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.d("REFRESH", "onRefresh called from SwipeRefreshLayout");
+                        updateGroups();
+                    }
+                }
+        );
+        srl.setColorSchemeColors(Color.RED, Color.BLUE, Color.YELLOW, Color.MAGENTA);
+
+        //init();
     }
 
     private void init() {
@@ -35,7 +76,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getGroups() {
+        groups = new ArrayList<Group>();
+        groups.add(new Group("1", "NAME 1"));
+        groups.add(new Group("2", "NAME 2"));
+        groups.add(new Group("3", "NAME 3"));
+        groups.add(new Group("4", "NAME 4"));
+        groups.add(new Group("5", "NAME 5"));
+        groups.add(new Group("6", "NAME 6"));
+        groups.add(new Group("7", "NAME 7"));
+        groups.add(new Group("8", "NAME 8"));
+        groups.add(new Group("9", "NAME 9"));
+    }
 
+    private void updateGroups() {
+        // do updating
+        groupAdapter.notifyDataSetChanged();
+        srl.setRefreshing(false);
     }
 
     @Override
@@ -48,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_main_add:
-                // create group here
+                Intent addGroup = new Intent(this, AddGroupActivity.class);
+                startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
                 // access account settings from here
