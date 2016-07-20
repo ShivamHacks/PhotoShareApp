@@ -19,9 +19,10 @@ import com.android.volley.toolbox.Volley;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.example.shivamagrawal.photoshareapp.Objects.Server;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 // TODO: server stuff in async
 
@@ -36,7 +37,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     String userID = "";
     String countryISO = "";
-    String internationalNumber = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

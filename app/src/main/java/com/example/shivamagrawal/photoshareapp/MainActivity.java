@@ -37,9 +37,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = this;
 
-        Intent gallery = new Intent(context, GalleryActivity.class);
-        startActivity(gallery);
-
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
 
@@ -49,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent group = new Intent(context, GroupActivity.class);
+                group.putExtra("groupID", groups.get(i).getID());
+                group.putExtra("groupName", groups.get(i).getName());
                 startActivity(group);
             }
         });

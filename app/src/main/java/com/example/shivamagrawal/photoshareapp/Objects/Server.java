@@ -1,4 +1,4 @@
-package com.example.shivamagrawal.photoshareapp;
+package com.example.shivamagrawal.photoshareapp.Objects;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -17,7 +17,7 @@ public class Server {
     private static String baseURL = "http://10.0.0.11:3000";
     private static String getFullURL(String extension) { return baseURL + extension; }
 
-    // Sign Up, Login, Verify
+    // Sign Up, LoginActivity, Verify
     public static String signupURL = getFullURL("/api/users/signup");
     public static String loginURL = getFullURL("/api/users/login");
     public static String verifyURL = getFullURL("/api/users/verify");

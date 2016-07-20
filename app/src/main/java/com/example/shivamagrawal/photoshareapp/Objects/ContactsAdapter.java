@@ -16,10 +16,13 @@ import com.example.shivamagrawal.photoshareapp.R;
 public class ContactsAdapter extends ArrayAdapter<Contact> {
 
     private int layoutResource;
+    final List<Contact> members;
 
     public ContactsAdapter(Context context, int layoutResource, List<Contact> items) {
         super(context, layoutResource, items);
         this.layoutResource = layoutResource;
+        members = items;
+
     }
 
     @Override
@@ -42,5 +45,56 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
 
         return view;
     }
+
+    @Override
+    public Filter getFilter() {
+        return CustomFilter;
+    }
+
+    private Filter CustomFilter = new Filter() {
+        @Override
+        public CharSequence convertResultToString(Object ResultValue) {
+            return ((Contact) ResultValue).getNumber();
+        }
+
+        /*
+        So it seems that every iteration of filtering reduces members to only filters that satisfied the pervious result
+        So a mistype reduces all potential results for all following characters
+         */
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+
+            FilterResults results = new FilterResults();
+
+            List<Contact> allMembers = new ArrayList<Contact>(members);
+
+            if(constraint == null || constraint.length() == 0){
+                results.values = allMembers;
+                results.count = allMembers.size();
+            } else {
+                final ArrayList<Contact> NewValues = new ArrayList<Contact>();
+
+                for(Contact contact : allMembers){
+                    if (contact.getNumber().indexOf(constraint.toString()) != -1) {
+                        NewValues.add(contact);
+                    }
+                }
+                results.values = NewValues;
+                results.count = NewValues.size();
+            }
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence Constraint, FilterResults results) {
+            clear();
+            if(results.count > 0) {
+                addAll((ArrayList<Contact>) results.values);
+            }
+            notifyDataSetInvalidated();
+        }
+    };
 
 }

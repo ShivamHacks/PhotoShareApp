@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.util.Log;
 
 public class GroupActivity extends AppCompatActivity {
 
     Toolbar toolbar;
+    String groupID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +22,11 @@ public class GroupActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        // todo: use savedInstanceState later
+        Bundle extras = getIntent().getExtras();
+        groupID = extras.getString("groupID");
+        getSupportActionBar().setTitle(extras.getString("groupName"));
     }
 
     @Override
