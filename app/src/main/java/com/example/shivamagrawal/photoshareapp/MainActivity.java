@@ -18,6 +18,7 @@ import android.util.Log;
 
 import java.util.List;
 import java.util.ArrayList;
+
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
 import com.example.shivamagrawal.photoshareapp.Objects.GroupAdapter;
 
@@ -35,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+
+        Intent gallery = new Intent(context, GalleryActivity.class);
+        startActivity(gallery);
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);

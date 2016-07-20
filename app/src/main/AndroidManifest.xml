@@ -32,7 +32,8 @@
         <activity android:name=".LoginOrSignUpActivity" />
         <activity android:name=".Login" />
         <activity android:name=".SignUpActivity" />
-        <activity android:name=".AddGroupActivity"></activity>
+        <activity android:name=".AddGroupActivity" />
+        <activity android:name=".GalleryActivity"></activity>
     </application>
 
 </manifest>
