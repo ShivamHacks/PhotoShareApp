@@ -12,12 +12,4 @@
         app:showAsAction="ifRoom">
     </item>
 
-    <item
-        android:id="@+id/action_group_settings"
-        android:orderInCategory="200"
-        android:title="Settings"
-        android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="ifRoom">
-    </item>
-
 </menu>

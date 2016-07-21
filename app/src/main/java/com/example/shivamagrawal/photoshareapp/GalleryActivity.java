@@ -3,6 +3,7 @@ package com.example.shivamagrawal.photoshareapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.support.v7.widget.Toolbar;
 import android.widget.GridView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -19,7 +20,9 @@ import com.example.shivamagrawal.photoshareapp.Objects.GalleryAdapter;
 
 public class GalleryActivity extends AppCompatActivity {
 
+    Toolbar toolbar;
     Context context;
+    String groupID;
     LayoutInflater inflater;
     String[] photoURLS = {
             "https://images.unsplash.com/photo-1464740042629-b78a46b310ae",
@@ -51,6 +54,15 @@ public class GalleryActivity extends AppCompatActivity {
 
         context = this;
 
+        toolbar = (Toolbar) findViewById(R.id.gallery_activity_tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        Bundle extras = getIntent().getExtras();
+        groupID = extras.getString("groupID");
+        getSupportActionBar().setTitle(extras.getString("groupName"));
+
         GridView gridview = (GridView) findViewById(R.id.photo_gridview);
         gridview.setAdapter(new GalleryAdapter(this, photoURLS));
 
@@ -58,6 +70,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         gridview.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                // TODO: need to fix this
                 Dialog photoDialog = new Dialog(context);
                 photoDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
                 RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.photo_view, null);
@@ -68,7 +81,7 @@ public class GalleryActivity extends AppCompatActivity {
             }
         });
 
-        gridview.setSystemUiVisibility(
+        findViewById(R.id.gallery_activity_container).setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN

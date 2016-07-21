@@ -16,7 +16,7 @@
         android:id="@+id/action_main_settings"
         android:orderInCategory="200"
         android:title="Settings"
-        android:icon="@drawable/ic_settings_white_24dp"
+        android:icon="@drawable/ic_account_circle_white_24dp"
         app:showAsAction="ifRoom">
     </item>
 

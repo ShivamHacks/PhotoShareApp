@@ -12,6 +12,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.util.Log;
@@ -25,7 +27,6 @@ import com.example.shivamagrawal.photoshareapp.Objects.GroupAdapter;
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
-    SwipeRefreshLayout srl;
     ListView groupsList;
     GroupAdapter groupAdapter;
     List<Group> groups;
@@ -42,29 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
         getGroups(); // Load groups
         groupsList = (ListView) findViewById(R.id.list_groups);
-        groupsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent group = new Intent(context, GroupActivity.class);
-                group.putExtra("groupID", groups.get(i).getID());
-                group.putExtra("groupName", groups.get(i).getName());
-                startActivity(group);
-            }
-        });
-        groupAdapter = new GroupAdapter(this, R.layout.group_item_layout, groups);
+        groupAdapter = new GroupAdapter(this, groups);
         groupsList.setAdapter(groupAdapter);
-
-        srl = (SwipeRefreshLayout) findViewById(R.id.list_groups_swipeContainer);
-        srl.setOnRefreshListener(
-                new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        Log.d("REFRESH", "onRefresh called from SwipeRefreshLayout");
-                        updateGroups();
-                    }
-                }
-        );
-        srl.setColorSchemeColors(Color.RED, Color.BLUE, Color.YELLOW, Color.MAGENTA);
 
         //init();
     }
@@ -91,12 +71,6 @@ public class MainActivity extends AppCompatActivity {
         groups.add(new Group("9", "NAME 9"));
     }
 
-    private void updateGroups() {
-        // do updating
-        groupAdapter.notifyDataSetChanged();
-        srl.setRefreshing(false);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -111,8 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
-                // access account settings from here
-                // in eventactivity, settings button leads to group settings
+                // TODO: account settings
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

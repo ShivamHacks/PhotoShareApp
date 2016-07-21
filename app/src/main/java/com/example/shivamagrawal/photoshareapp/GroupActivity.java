@@ -84,6 +84,7 @@ public class GroupActivity extends AppCompatActivity {
                     @Override
                     public void onRefresh() {
                         Log.d("REFRESH", "onRefresh called from SwipeRefreshLayout");
+                        srl.setRefreshing(false);
                     }
                 }
         );
@@ -108,12 +109,12 @@ public class GroupActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_group_add:
                 return true;
-            case R.id.action_group_settings:
+            /*case R.id.:
                 Intent settings = new Intent(this, GroupSettingsActivity.class);
                 startActivity(settings);
                 // access account settings from here
                 // in eventactivity, settings button leads to group settings
-                return true;
+                return true;*/
             default:
                 return super.onOptionsItemSelected(item);
         }

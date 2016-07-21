@@ -20,12 +20,31 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <ImageView
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:gravity="right"
-        android:layout_marginRight="20dp"
-        android:src="@drawable/ic_chevron_right_black_24dp"/>
+        android:id="@+id/group_action_photo"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/ic_photo_camera_black_24dp"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="right"
+        android:layout_marginRight="10dp"
+        android:id="@+id/group_action_gallery"
+        android:src="@drawable/ic_photo_library_black_24dp"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="right"
+        android:layout_marginRight="10dp"
+        android:id="@+id/group_action_settings"
+        android:src="@drawable/ic_settings_black_24dp"/>
 
 </LinearLayout>
