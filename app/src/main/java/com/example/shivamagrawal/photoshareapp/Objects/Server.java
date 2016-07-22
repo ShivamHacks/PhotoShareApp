@@ -2,10 +2,15 @@ package com.example.shivamagrawal.photoshareapp.Objects;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import org.json.JSONObject;
 
@@ -27,7 +32,7 @@ public class Server {
     public static String createEventURL = getFullURL("/api/groups/createEvent");
     public static String getAllGroupsURL = getFullURL("/api/groups/getAllGroups");
     public static String getGroupURL = getFullURL("/api/groups/getGroup");
-    public static String addMembersURL = getFullURL("/api/groups/addMembers");
+    public static String editGroupURL = getFullURL("/api/groups/editGroup");
     public static String deleteGroupURL = getFullURL("/api/groups/deleteGroup");
     public static String deleteEventURL = getFullURL("/api/groups/deleteEvent");
 
@@ -64,6 +69,16 @@ public class Server {
                 return headers;
             }
         };
+    }
+
+    public static void makeRequest(Context context, StringRequest sr) {
+        RequestQueue queue = Volley.newRequestQueue(context);
+        queue.add(sr);
+    }
+
+    public static String getToken(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences("main", Context.MODE_PRIVATE);
+        return sharedPref.getString("token", null);
     }
 
 }

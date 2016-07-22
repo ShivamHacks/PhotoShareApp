@@ -26,21 +26,26 @@
 
             <!-- Change Group Name -->
             <LinearLayout style="@style/settings_container">
+
                 <EditText
                     android:id="@+id/editText_group_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:inputType="textCapSentences|textAutoCorrect"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:hint="Group Name" />
+                    android:hint="Group Name"
+                    android:inputType="textCapSentences|textAutoCorrect"
+                    android:maxLines="1">
+
+                    <requestFocus />
+                </EditText>
             </LinearLayout>
 
             <!-- Add Members UI -->
             <LinearLayout style="@style/settings_container">
+
                 <LinearLayout
                     android:id="@+id/members_list"
                     android:layout_width="match_parent"
@@ -50,6 +55,7 @@
 
             <!-- Submit Button -->
             <LinearLayout style="@style/settings_container">
+
                 <Button
                     android:id="@+id/submit_new_group_button"
                     android:layout_width="match_parent"

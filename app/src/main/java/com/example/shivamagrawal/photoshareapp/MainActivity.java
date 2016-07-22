@@ -18,30 +18,46 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
 import com.example.shivamagrawal.photoshareapp.Objects.GroupAdapter;
+import com.example.shivamagrawal.photoshareapp.Objects.Server;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     ListView groupsList;
     GroupAdapter groupAdapter;
-    List<Group> groups;
+    ArrayList<Group> groups = new ArrayList<Group>();
     Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //ArrayList<Group> savedGroups = savedInstanceState.getParcelableArrayList("groups");
+        if (savedInstanceState != null) {
+            Log.e("RESTORING onCreate", "LOL");
+            groups = savedInstanceState.getParcelableArrayList("groups");
+        }
         context = this;
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
 
-        getGroups(); // Load groups
+        //getGroups(); // Load groups
         groupsList = (ListView) findViewById(R.id.list_groups);
         groupAdapter = new GroupAdapter(this, groups);
         groupsList.setAdapter(groupAdapter);
@@ -59,16 +75,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getGroups() {
-        groups = new ArrayList<Group>();
-        groups.add(new Group("1", "NAME 1"));
-        groups.add(new Group("2", "NAME 2"));
-        groups.add(new Group("3", "NAME 3"));
-        groups.add(new Group("4", "NAME 4"));
-        groups.add(new Group("5", "NAME 5"));
-        groups.add(new Group("6", "NAME 6"));
-        groups.add(new Group("7", "NAME 7"));
-        groups.add(new Group("8", "NAME 8"));
-        groups.add(new Group("9", "NAME 9"));
+        groups.clear();
+        Map<String, String> params = new HashMap<String, String>();
+        StringRequest sr = Server.GET(params, Server.getAllGroupsURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        try {
+                            JSONObject results = new JSONObject(s);
+                            JSONArray groupsJSON = results.getJSONArray("groups");
+                            for (int i = 0; i < groupsJSON.length(); i++) {
+                                JSONObject group = new JSONObject(groupsJSON.get(i).toString());
+                                groups.add(new Group(group.getString("_id"), group.getString("groupName")));
+                            }
+                        } catch(JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Log.d("ERR", "ERR");
+                    }
+                }
+        );
+        Server.makeRequest(context, sr);
     }
 
     @Override
@@ -85,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
+                getGroups();
                 // TODO: account settings
                 return true;
             default:
@@ -92,19 +125,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // TODO: need to fix this!!!
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.e("PAUSED", "P");
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        getGroups();
+        Log.e("RESUME", "R");
+    }
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        getGroups();
+        Log.e("RESTART", "R");
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        getGroups();
+        Log.e("START", "S");
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.e("DESTROY", "D");
+    }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        // Save stuff
-        // savedInstanceState.putInt(STATE_SCORE, mCurrentScore);
-        // Always call the superclass so it can save the view hierarchy state
+        savedInstanceState.putParcelableArrayList("groups", groups);
+        Log.e("SAVING", "S");
         super.onSaveInstanceState(savedInstanceState);
     }
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Always call the superclass so it can restore the view hierarchy
         super.onRestoreInstanceState(savedInstanceState);
-        // Restore state
-        // mCurrentScore = savedInstanceState.getInt(STATE_SCORE);
+        Log.e("RESTORED", "R");
+        groups = savedInstanceState.getParcelableArrayList("groups");
     }
 
     // TODO: App restart, stop, pause, etc handling for all activities

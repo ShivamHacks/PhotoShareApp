@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -37,10 +38,11 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
-import com.example.shivamagrawal.photoshareapp.Objects.GalleryAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
-import com.example.shivamagrawal.photoshareapp.Objects.ViewHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,8 +57,10 @@ public class GroupSettingsActivity extends AppCompatActivity {
     LayoutInflater inflater;
     Button addMembersButton;
     Button submitButton;
-    EditText groupName;
+    EditText groupNameET;
     Context context;
+
+    String groupName;
 
     /*
     Settings that can be changed: add members, delete members (can't edit members) and group name
@@ -67,23 +71,31 @@ public class GroupSettingsActivity extends AppCompatActivity {
      */
 
     List<String> currentMembers = new ArrayList<String>(); // current members
-    List<String> removedMembers = new ArrayList<String>(); // removed members
-    List<String> addedMembers = new ArrayList<String>(); // addedMembers
 
     String groupID;
+    String countryISO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_settings);
         context = this;
-        // Retrieve variables TODO and set group name
 
         // Toolbar
         toolbar = (Toolbar) findViewById(R.id.group_settings_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        // Group Name
+        groupNameET = (EditText) findViewById(R.id.group_name_edittext);
+
+        // Get Launch data
+        Bundle extras = getIntent().getExtras();
+        groupID = extras.getString("groupID");
+        groupName = extras.getString("groupName");
+        getSupportActionBar().setTitle(groupName);
+        groupNameET.setText(groupName);
 
         // Get group data
         getGroupData();
@@ -93,7 +105,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
         ArrayAdapter<String> membersAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, currentMembers);
         existingMembers.setAdapter(membersAdapter);
-        ViewHelper.justifyListViewHeightBasedOnChildren(existingMembers);
+        justifyListViewHeightBasedOnChildren(existingMembers);
 
         // New Members
         membersListLayout = (LinearLayout) findViewById(R.id.groupsettings_add_members_list);
@@ -108,15 +120,15 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 } else {
                     AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
                             .getChildAt(membersListLayout.getChildCount() - 1);
-                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
-                        lastACTV.requestFocus();
-                    else membersListLayout.addView(createACTV());
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
+                    else {
+                        AutoCompleteTextView newACTV = createACTV();
+                        newACTV.requestFocus();
+                        membersListLayout.addView(newACTV);
+                    }
                 }
             }
         });
-
-        // Group Name
-        groupName = (EditText) findViewById(R.id.group_name_edittext);
 
         // Finished Button
         submitButton = (Button) findViewById(R.id.editgroup_submit_button);
@@ -126,6 +138,9 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 submit();
             }
         });
+
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        countryISO = tm.getSimCountryIso();
 
         //init();
     }
@@ -145,61 +160,81 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
                     AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
                             .getChildAt(membersListLayout.getChildCount() - 1);
-                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
-                        lastACTV.requestFocus();
-                    else membersListLayout.addView(createACTV());
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
+                    else {
+                        AutoCompleteTextView newACTV = createACTV();
+                        newACTV.requestFocus();
+                        membersListLayout.addView(newACTV);
+                    }
                     handled = true;
                 }
                 return handled;
             }
         });
-        List<Contact> contacts = GetContacts.get(context);
         ContactsAdapter adapter = new ContactsAdapter(context, GetContacts.get((context)));
         memberET.setAdapter(adapter);
         return memberET;
     }
 
+    private void justifyListViewHeightBasedOnChildren (ListView listView) {
+        // http://stackoverflow.com/questions/12212890/disable-listview-scrolling
+        ListAdapter adapter = listView.getAdapter();
+
+        if (adapter == null) {
+            return;
+        }
+        ViewGroup vg = listView;
+        int totalHeight = 0;
+        for (int i = 0; i < adapter.getCount(); i++) {
+            View listItem = adapter.getView(i, null, vg);
+            listItem.measure(0, 0);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams par = listView.getLayoutParams();
+        par.height = totalHeight + (listView.getDividerHeight() * (adapter.getCount() - 1));
+        listView.setLayoutParams(par);
+        listView.requestLayout();
+    }
+
     private void submit() {
-        // check if group name has changed (via variable comparison - name on activity create vs edittext content?
-        // TODO need to do this
-
-        // TODO: when submitting, need to convert array to string
-        /*List<String[]> phoneNumbers = new ArrayList<String[]>();
-        for (int i = 0; i < membersListLayout.getChildCount(); i++) {
-            EditText memberET = (EditText) membersListLayout.getChildAt(i);
-            String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
-            String[] numberInfo = { member, null };
-            if (member.indexOf("+") == -1) { // not international number
-                numberInfo[1] = countryISO;
-            }
-            phoneNumbers.add(numberInfo);
-            Log.d("MEMBER", member);
-        }
-        String name = groupName.getText().toString();
-
-        // Send stuff
+        // Define params
         Map<String, String> params = new HashMap<String, String>();
-        params.put("name", name);
-        for (int j = 0; j < phoneNumbers.size(); j++) {
-            params.put("members[" + j + "]", Arrays.toString(phoneNumbers.get(j)));
+
+        // Put params if valid
+        if (!(groupName.equals(groupNameET.getText().toString())) &&
+                !(TextUtils.isEmpty(groupNameET.getText().toString())))
+            params.put("groupName", groupNameET.getText().toString());
+        if (membersListLayout.getChildCount() > 0) {
+            List<String> phoneNumbers = new ArrayList<String>();
+            for (int i = 0; i < membersListLayout.getChildCount(); i++) {
+                EditText memberET = (EditText) membersListLayout.getChildAt(i);
+                String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
+                phoneNumbers.add(member);
+            }
+            for (int j = 0; j < phoneNumbers.size(); j++)
+                params.put("newMembers[" + j + "]", phoneNumbers.get(j));
+            params.put("countryISO", countryISO);
         }
+
         // Post to server
-        RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest sr = Server.POST(params, Server.createGroupURL,
+        // params.put("token", Server.getToken(context)); --> Always do this
+        StringRequest sr = Server.POST(params, Server.editGroupURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
-
+                        Log.d("RES", s);
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-
+                        Log.d("ERR", "ERR");
                     }
                 }
         );
-        queue.add(sr);*/
+        Server.makeRequest(context, sr);
+
     }
 
 }

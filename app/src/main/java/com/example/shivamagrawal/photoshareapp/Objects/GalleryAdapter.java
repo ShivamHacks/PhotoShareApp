@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.GridView;
 
+import java.util.List;
 import com.bumptech.glide.Glide;
 
 import android.view.WindowManager;
@@ -16,12 +17,12 @@ import android.graphics.Point;
 public class GalleryAdapter extends BaseAdapter {
 
     private Context context;
-    private String[] photoURLs;
+    private List<String> photoURLs;
 
     int width;
     int height;
 
-    public GalleryAdapter(Context context, String[] photoURLs) {
+    public GalleryAdapter(Context context, List<String> photoURLs) {
         this.context = context;
         this.photoURLs = photoURLs;
 
@@ -34,7 +35,7 @@ public class GalleryAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return photoURLs.length;
+        return photoURLs.size();
     }
 
     public Object getItem(int position) {
@@ -57,7 +58,7 @@ public class GalleryAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        Glide.with(context).load(photoURLs[position]).centerCrop().into(imageView);
+        Glide.with(context).load(photoURLs.get(position)).centerCrop().into(imageView);
         //imageView.setImageResource(mThumbIds[position]);
         return imageView;
     }

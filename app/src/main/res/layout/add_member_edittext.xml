@@ -12,6 +12,4 @@
     android:backgroundTint="@android:color/darker_gray"
     android:textColor="#000000"
     android:textColorHint="#CFD8DC">
-
-    <requestFocus />
 </AutoCompleteTextView>

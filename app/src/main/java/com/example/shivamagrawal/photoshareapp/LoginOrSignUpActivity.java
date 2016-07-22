@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.app.Activity;
 
-import com.example.shivamagrawal.photoshareapp.Objects.Statics;
-
 public class LoginOrSignUpActivity extends AppCompatActivity {
 
     Button login;
@@ -39,7 +37,7 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent signUp = new Intent(context, SignUpActivity.class);
-                startActivityForResult(signUp, Statics.tokenResultCode);
+                startActivityForResult(signUp, 1);
             }
         });
     }
@@ -47,7 +45,7 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        if (requestCode == Statics.tokenResultCode) {
+        if (requestCode == 1) {
             // Make sure the request was successful
             if (resultCode == Activity.RESULT_OK) {
                 SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);

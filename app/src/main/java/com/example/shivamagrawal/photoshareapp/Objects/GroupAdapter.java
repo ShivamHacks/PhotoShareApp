@@ -85,6 +85,8 @@ public class GroupAdapter extends ArrayAdapter<Group> {
                 public void onClick(View view) {
                     Log.d("SETTINGS ACTION", "" + position);
                     Intent settings = new Intent(context, GroupSettingsActivity.class);
+                    settings.putExtra("groupID", group.getID());
+                    settings.putExtra("groupName", group.getName());
                     context.startActivity(settings);
                 }
             });

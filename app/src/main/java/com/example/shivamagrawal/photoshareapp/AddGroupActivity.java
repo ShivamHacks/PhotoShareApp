@@ -102,50 +102,55 @@ public class AddGroupActivity extends AppCompatActivity {
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
                     AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
                             .getChildAt(membersListLayout.getChildCount() - 1);
-                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
-                        lastACTV.requestFocus();
-                    else membersListLayout.addView(createACTV());
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
+                    else {
+                        AutoCompleteTextView newACTV = createACTV();
+                        newACTV.requestFocus();
+                        membersListLayout.addView(newACTV);
+                    }
                     handled = true;
                 }
                 return handled;
             }
         });
-        List<Contact> contacts = GetContacts.get(context);
         ContactsAdapter adapter = new ContactsAdapter(context, GetContacts.get((context)));
         memberET.setAdapter(adapter);
         return memberET;
     }
 
     private void submit() {
-        // Validate form values
-        List<String[]> phoneNumbers = new ArrayList<String[]>();
-        for (int i = 0; i < membersListLayout.getChildCount(); i++) {
-            EditText memberET = (EditText) membersListLayout.getChildAt(i);
-            String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
-        }
-        String name = groupName.getText().toString();
-
-        // Send stuff
+        // Define params
         Map<String, String> params = new HashMap<String, String>();
-        params.put("name", name);
-        params.put("countryISO", countryISO); // assumes all group users phones are from same country
-        for (int j = 0; j < phoneNumbers.size(); j++) {
-            params.put("members[" + j + "]", Arrays.toString(phoneNumbers.get(j)));
+
+        // Put params if valid
+        if (!(TextUtils.isEmpty(groupName.getText().toString())))
+            params.put("groupName", groupName.getText().toString());
+        if (membersListLayout.getChildCount() > 0) {
+            List<String> phoneNumbers = new ArrayList<String>();
+            for (int i = 0; i < membersListLayout.getChildCount(); i++) {
+                EditText memberET = (EditText) membersListLayout.getChildAt(i);
+                String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
+                phoneNumbers.add(member);
+            }
+            for (int j = 0; j < phoneNumbers.size(); j++)
+                params.put("members[" + j + "]", phoneNumbers.get(j));
+            params.put("countryISO", countryISO);
         }
+
         // Post to server
-        RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = Server.POST(params, Server.createGroupURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
-                        try {
+                        /*try {
                             JSONObject result = new JSONObject(s);
                             if (result.getBoolean("success")) {
                                 // save group ID here
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                        }
+                        }*/
+                        Log.d("SUC", "SUC");
                     }
                 },
                 new Response.ErrorListener() {
@@ -155,6 +160,6 @@ public class AddGroupActivity extends AppCompatActivity {
                     }
                 }
         );
-        queue.add(sr);
+        Server.makeRequest(context, sr);
     }
 }
