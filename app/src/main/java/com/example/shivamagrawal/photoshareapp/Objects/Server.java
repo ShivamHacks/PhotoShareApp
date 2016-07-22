@@ -29,12 +29,11 @@ public class Server {
 
     // Groups and events
     public static String createGroupURL = getFullURL("/api/groups/createGroup");
-    public static String createEventURL = getFullURL("/api/groups/createEvent");
     public static String getAllGroupsURL = getFullURL("/api/groups/getAllGroups");
-    public static String getGroupURL = getFullURL("/api/groups/getGroup");
+    public static String getGroupInfoURL = getFullURL("/api/groups/getGroupInfo");
     public static String editGroupURL = getFullURL("/api/groups/editGroup");
     public static String deleteGroupURL = getFullURL("/api/groups/deleteGroup");
-    public static String deleteEventURL = getFullURL("/api/groups/deleteEvent");
+    public static String leaveGroupURL = getFullURL("/api/groups/leaveGroup");
 
     // Photos
     public static String uploadPhotoURL = getFullURL("/api/photos/upload");

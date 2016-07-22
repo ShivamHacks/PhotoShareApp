@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.content.Context;
 import android.widget.Filter;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -29,7 +30,9 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
                     .inflate(android.R.layout.simple_list_item_2, null);
             holder = new ViewHolder();
             convertView.setTag(holder);
-        } else { holder = (ViewHolder) convertView.getTag(); }
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
 
         Contact contact = getItem(position);
         if (contact != null) {
@@ -66,16 +69,15 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
 
             List<Contact> allMembers = members;
 
-            if(constraint == null || constraint.length() == 0){
+            if (constraint == null || constraint.length() == 0) {
                 results.values = allMembers;
                 results.count = allMembers.size();
             } else {
-                final ArrayList<Contact> NewValues = new ArrayList<Contact>();
+                ArrayList<Contact> NewValues = new ArrayList<Contact>();
 
-                for(Contact contact : allMembers){
-                    if (contact.getNumber().indexOf(constraint.toString()) != -1) {
+                for (Contact contact : allMembers) {
+                    if (contact.getNumber().indexOf(constraint.toString()) != -1)
                         NewValues.add(contact);
-                    }
                 }
                 results.values = NewValues;
                 results.count = NewValues.size();
@@ -87,7 +89,7 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
         @Override
         protected void publishResults(CharSequence Constraint, FilterResults results) {
             clear();
-            if(results.count > 0)
+            if (results.count > 0)
                 addAll((ArrayList<Contact>) results.values);
             notifyDataSetChanged();
         }

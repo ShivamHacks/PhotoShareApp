@@ -19,9 +19,11 @@ import android.widget.ListView;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -42,22 +44,18 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Group> groups = new ArrayList<Group>();
     Context context;
 
+    boolean firstTimeActivityLaunched = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //ArrayList<Group> savedGroups = savedInstanceState.getParcelableArrayList("groups");
-        if (savedInstanceState != null) {
-            Log.e("RESTORING onCreate", "LOL");
-            groups = savedInstanceState.getParcelableArrayList("groups");
-        }
         context = this;
+        firstTimeActivityLaunched = true;
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
 
-        //getGroups(); // Load groups
         groupsList = (ListView) findViewById(R.id.list_groups);
         groupAdapter = new GroupAdapter(this, groups);
         groupsList.setAdapter(groupAdapter);
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         } // TODO need to do start activity for result and get whether logged in or not first
     }
 
+    // CURRENT SYSTEM: loads groups every time activity launched/recreated
     private void getGroups() {
         groups.clear();
         Map<String, String> params = new HashMap<String, String>();
@@ -88,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                                 JSONObject group = new JSONObject(groupsJSON.get(i).toString());
                                 groups.add(new Group(group.getString("_id"), group.getString("groupName")));
                             }
+                            groupAdapter.notifyDataSetChanged();
                         } catch(JSONException e) {
                             e.printStackTrace();
                         }
@@ -102,6 +102,25 @@ public class MainActivity extends AppCompatActivity {
         );
         Server.makeRequest(context, sr);
     }
+
+   /* private void saveGroups() {
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        Set<String> groupsInStrings = new HashSet<String>();
+        for (Group g: groups)
+            groupsInStrings.add(g.toString());
+        editor.putStringSet("groups", groupsInStrings);
+    }
+
+    private void getLocalGroups() {
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        Set<String> groupsInStrings = sharedPref.getStringSet("groups", null);
+        for (String groupInString: groupsInStrings) {
+            String[] groupParts = groupInString.split("|");
+            groups.add(new Group(groupParts[0], groupParts[1]));
+        }
+        groupAdapter.notifyDataSetChanged();
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -125,49 +144,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // TODO: need to fix this!!!
+    /*
+    Did not override these yet:
+    - onStart
+    - onDestroy
+    - onRestart
+    - onPause
+    - onSaveInstanceState
+    - onRestoreInstanceState
+     */
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.e("PAUSED", "P");
-    }
     @Override
     public void onResume() {
         super.onResume();
         getGroups();
-        Log.e("RESUME", "R");
-    }
-    @Override
-    public void onRestart() {
-        super.onRestart();
-        getGroups();
-        Log.e("RESTART", "R");
-    }
-    @Override
-    public void onStart() {
-        super.onStart();
-        getGroups();
-        Log.e("START", "S");
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e("DESTROY", "D");
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putParcelableArrayList("groups", groups);
-        Log.e("SAVING", "S");
-        super.onSaveInstanceState(savedInstanceState);
-    }
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        Log.e("RESTORED", "R");
-        groups = savedInstanceState.getParcelableArrayList("groups");
-    }
-
-    // TODO: App restart, stop, pause, etc handling for all activities
 }

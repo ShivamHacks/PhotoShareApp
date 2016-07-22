@@ -39,8 +39,10 @@ import com.bumptech.glide.Glide;
 import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
+import com.example.shivamagrawal.photoshareapp.Objects.Group;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,6 +73,8 @@ public class GroupSettingsActivity extends AppCompatActivity {
      */
 
     List<String> currentMembers = new ArrayList<String>(); // current members
+    ListView existingMembers;
+    ArrayAdapter<String> membersAdapter;
 
     String groupID;
     String countryISO;
@@ -101,8 +105,8 @@ public class GroupSettingsActivity extends AppCompatActivity {
         getGroupData();
 
         // Existing members
-        ListView existingMembers = (ListView) findViewById(R.id.editgroup_existing_members_listview);
-        ArrayAdapter<String> membersAdapter = new ArrayAdapter<String>(this,
+        existingMembers = (ListView) findViewById(R.id.editgroup_existing_members_listview);
+        membersAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, currentMembers);
         existingMembers.setAdapter(membersAdapter);
         justifyListViewHeightBasedOnChildren(existingMembers);
@@ -146,9 +150,38 @@ public class GroupSettingsActivity extends AppCompatActivity {
     }
 
     private void getGroupData() {
-        currentMembers.add("212312");
-        currentMembers.add("390832");
-        currentMembers.add("091323");
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("groupID", groupID);
+        // TODO: put token and groupID in params
+        StringRequest sr = Server.GET(params, Server.getGroupInfoURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        try {
+                            Log.d("RES", s);
+                            JSONObject results = new JSONObject(s);
+                            JSONArray membersJSON = results.getJSONArray("members");
+                            Log.d("MEMBERS", membersJSON.toString());
+                            for (int i = 0; i < membersJSON.length(); i++) {
+                                Log.d("MEMBER", membersJSON.getString(i));
+                                currentMembers.add(membersJSON.getString(i));
+                            }
+                            Log.d("SIZE", currentMembers.size() + "");
+                            membersAdapter.notifyDataSetChanged();
+                            justifyListViewHeightBasedOnChildren(existingMembers);
+                        } catch(JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Log.d("ERR", "ERR");
+                    }
+                }
+        );
+        Server.makeRequest(context, sr);
     }
 
     private AutoCompleteTextView createACTV() {

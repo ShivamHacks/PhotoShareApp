@@ -29,6 +29,10 @@ public class Group implements Parcelable {
         return id.equals(otherID);
     }
 
+    public String toString() {
+        return id + "|" + name;
+    }
+
     @Override
     public int describeContents() {
         return 0;
