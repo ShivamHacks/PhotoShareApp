@@ -44,14 +44,11 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Group> groups = new ArrayList<Group>();
     Context context;
 
-    boolean firstTimeActivityLaunched = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
-        firstTimeActivityLaunched = true;
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
@@ -67,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
         boolean loggedIn = sharedPref.getBoolean("loggedIn", false);
         if (!loggedIn) {
-            Intent login = new Intent(this, LoginOrSignUpActivity.class);
-            startActivity(login);
-        } // TODO need to do start activity for result and get whether logged in or not first
+            Intent loginOrSignUp = new Intent(this, LoginOrSignUpActivity.class);
+            startActivity(loginOrSignUp);
+        }
     }
 
     // CURRENT SYSTEM: loads groups every time activity launched/recreated
@@ -103,25 +100,6 @@ public class MainActivity extends AppCompatActivity {
         Server.makeRequest(context, sr);
     }
 
-   /* private void saveGroups() {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        Set<String> groupsInStrings = new HashSet<String>();
-        for (Group g: groups)
-            groupsInStrings.add(g.toString());
-        editor.putStringSet("groups", groupsInStrings);
-    }
-
-    private void getLocalGroups() {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        Set<String> groupsInStrings = sharedPref.getStringSet("groups", null);
-        for (String groupInString: groupsInStrings) {
-            String[] groupParts = groupInString.split("|");
-            groups.add(new Group(groupParts[0], groupParts[1]));
-        }
-        groupAdapter.notifyDataSetChanged();
-    }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -143,16 +121,6 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    /*
-    Did not override these yet:
-    - onStart
-    - onDestroy
-    - onRestart
-    - onPause
-    - onSaveInstanceState
-    - onRestoreInstanceState
-     */
 
     @Override
     public void onResume() {

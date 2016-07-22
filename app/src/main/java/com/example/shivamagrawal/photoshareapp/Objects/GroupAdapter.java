@@ -15,6 +15,7 @@ import java.util.List;
 import com.chauthai.swipereveallayout.SwipeRevealLayout;
 import com.chauthai.swipereveallayout.ViewBinderHelper;
 import com.example.shivamagrawal.photoshareapp.AddGroupActivity;
+import com.example.shivamagrawal.photoshareapp.CameraActivity;
 import com.example.shivamagrawal.photoshareapp.GalleryActivity;
 import com.example.shivamagrawal.photoshareapp.GroupSettingsActivity;
 import com.example.shivamagrawal.photoshareapp.R;
@@ -66,8 +67,8 @@ public class GroupAdapter extends ArrayAdapter<Group> {
                 @Override
                 public void onClick(View view) {
                     Log.d("PHOTO ACTION", "" + position);
-                    //Intent capture = new Intent(this, AddGroupActivity.class);
-                    //startActivity(addGroup);
+                    Intent capture = new Intent(context, CameraActivity.class);
+                    context.startActivity(capture);
                 }
             });
             actionGallery.setOnClickListener(new View.OnClickListener() {
