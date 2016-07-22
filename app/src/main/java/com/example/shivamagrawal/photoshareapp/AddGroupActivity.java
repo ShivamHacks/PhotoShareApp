@@ -113,7 +113,7 @@ public class AddGroupActivity extends AppCompatActivity {
                 return handled;
             }
         });
-        ContactsAdapter adapter = new ContactsAdapter(context, GetContacts.get((context)));
+        ContactsAdapter adapter = new ContactsAdapter(context);
         memberET.setAdapter(adapter);
         return memberET;
     }
@@ -129,7 +129,8 @@ public class AddGroupActivity extends AppCompatActivity {
             List<String> phoneNumbers = new ArrayList<String>();
             for (int i = 0; i < membersListLayout.getChildCount(); i++) {
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
-                String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
+                String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
+                String member = PhoneNumberUtils.normalizeNumber(unFormatted);
                 phoneNumbers.add(member);
             }
             for (int j = 0; j < phoneNumbers.size(); j++)
