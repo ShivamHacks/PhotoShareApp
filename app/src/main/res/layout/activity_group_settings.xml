@@ -13,70 +13,63 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin">
+        android:background="#ECEFF1">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/group_name_textview"
-                android:layout_marginTop="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:text="Group Name" />
+            <LinearLayout style="@style/settings_container">
 
-            <EditText
-                android:id="@+id/group_name_edittext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/group_name_textview"
-                android:hint="Group Name" />
+                <EditText
+                    android:id="@+id/group_name_edittext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:hint="Group Name" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/group_members_textview"
-                android:layout_marginTop="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/group_name_edittext"
-                android:text="Group Members" />
+            <LinearLayout style="@style/settings_container">
 
-            <ListView
-                android:id="@+id/editgroup_existing_members_listview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/group_members_textview" />
+                <ListView
+                    android:id="@+id/editgroup_existing_members_listview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"/>
+                <Button
+                    android:id="@+id/groupsettings_addmembers_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Add Members" />
+            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/editgroup_members_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editgroup_existing_members_listview"
-                android:orientation="vertical" />
+            <LinearLayout style="@style/settings_container">
+                <LinearLayout
+                    android:id="@+id/groupsettings_add_members_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/editgroup_add_member_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editgroup_members_list"
-                android:text="Add Member" />
+            <LinearLayout style="@style/settings_container">
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Leave Group" />
+                <Button
+                    android:id="@+id/editgroup_submit_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Done" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/editgroup_submit_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editgroup_add_member_button"
-                android:text="Done" />
-
-        </RelativeLayout>
+        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

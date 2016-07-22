@@ -23,7 +23,7 @@ public class Server {
     public static String verifyURL = getFullURL("/api/users/verify");
 
     // Groups and events
-    public static String createGroupURL = getFullURL("/api/groups/newGroup");
+    public static String createGroupURL = getFullURL("/api/groups/createGroup");
     public static String createEventURL = getFullURL("/api/groups/createEvent");
     public static String getAllGroupsURL = getFullURL("/api/groups/getAllGroups");
     public static String getGroupURL = getFullURL("/api/groups/getGroup");

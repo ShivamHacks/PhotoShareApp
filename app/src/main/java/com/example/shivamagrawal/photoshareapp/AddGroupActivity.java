@@ -2,14 +2,20 @@ package com.example.shivamagrawal.photoshareapp;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ArrayAdapter;
 import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.content.Context;
 import android.util.Log;
 
@@ -24,6 +30,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.Contact;
+import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONException;
@@ -43,6 +50,7 @@ public class AddGroupActivity extends AppCompatActivity {
     // TODO: display name? And then allow for only numbers?? Need to make it more dynamic.
     // FORNOW: Sticking to numbers only
 
+    Toolbar toolbar;
     LinearLayout membersListLayout;
     LayoutInflater inflater;
     Button addButton;
@@ -58,16 +66,14 @@ public class AddGroupActivity extends AppCompatActivity {
 
         context = this;
 
+        toolbar = (Toolbar) findViewById(R.id.add_group_activity_tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         membersListLayout = (LinearLayout) findViewById(R.id.members_list);
         inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        addButton = (Button) findViewById(R.id.add_member_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                membersListLayout.addView(createACTV());
-            }
-        });
+        membersListLayout.addView(createACTV()); // create First ACTV
 
         submitButton = (Button) findViewById(R.id.submit_new_group_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +85,7 @@ public class AddGroupActivity extends AppCompatActivity {
 
         groupName = (EditText) findViewById(R.id.editText_group_name);
 
-        TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         countryISO = tm.getSimCountryIso();
 
     }
@@ -89,56 +95,40 @@ public class AddGroupActivity extends AppCompatActivity {
     // Which means that each consecutive edittext's filtering became worse
     private AutoCompleteTextView createACTV() {
         AutoCompleteTextView memberET = (AutoCompleteTextView) inflater.inflate(R.layout.add_member_edittext, null);
-        ContactsAdapter adapter = new ContactsAdapter(context, R.layout.search_contacts_item, getContacts(context));
+        memberET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
+                            .getChildAt(membersListLayout.getChildCount() - 1);
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
+                        lastACTV.requestFocus();
+                    else membersListLayout.addView(createACTV());
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+        List<Contact> contacts = GetContacts.get(context);
+        ContactsAdapter adapter = new ContactsAdapter(context, GetContacts.get((context)));
         memberET.setAdapter(adapter);
         return memberET;
     }
 
-    public List<Contact> getContacts(Context cntx) {
-        // http://techblogon.com/read-multiple-phone-numbers-from-android-contacts-list-programmatically/
-        List<Contact> contacts = new ArrayList<Contact>();
-        Cursor cursor = cntx.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        Integer contactsCount = cursor.getCount();
-        if (contactsCount > 0) {
-            while(cursor.moveToNext()) {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-                String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                    Cursor pCursor = cntx.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
-                            new String[]{id}, null);
-                    while (pCursor.moveToNext()) {
-                        //int phoneType = pCursor.getInt(pCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
-                        String phoneNo 	= pCursor.getString(pCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        contacts.add(new Contact(contactName, phoneNo));
-                        //numbers.add(phoneNo);
-                    }
-                    pCursor.close();
-                }
-            }
-            cursor.close();
-        }
-        return contacts;
-    }
-
     private void submit() {
-        // TODO: when submitting, need to convert array to string
+        // Validate form values
         List<String[]> phoneNumbers = new ArrayList<String[]>();
         for (int i = 0; i < membersListLayout.getChildCount(); i++) {
             EditText memberET = (EditText) membersListLayout.getChildAt(i);
             String member = PhoneNumberUtils.normalizeNumber(memberET.getText().toString());
-            String[] numberInfo = { member, null };
-            if (member.indexOf("+") == -1) { // not international number
-                numberInfo[1] = countryISO;
-            }
-            phoneNumbers.add(numberInfo);
-            Log.d("MEMBER", member);
         }
         String name = groupName.getText().toString();
 
         // Send stuff
         Map<String, String> params = new HashMap<String, String>();
         params.put("name", name);
+        params.put("countryISO", countryISO); // assumes all group users phones are from same country
         for (int j = 0; j < phoneNumbers.size(); j++) {
             params.put("members[" + j + "]", Arrays.toString(phoneNumbers.get(j)));
         }
@@ -148,13 +138,20 @@ public class AddGroupActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
-
+                        try {
+                            JSONObject result = new JSONObject(s);
+                            if (result.getBoolean("success")) {
+                                // save group ID here
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-
+                        //Log.d("ERR", "ERR");
                     }
                 }
         );

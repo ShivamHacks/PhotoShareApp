@@ -9,10 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -24,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.util.Log;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -49,7 +53,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout membersListLayout;
     LayoutInflater inflater;
-    Button addButton;
+    Button addMembersButton;
     Button submitButton;
     EditText groupName;
     Context context;
@@ -73,7 +77,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_settings);
         context = this;
-        // Retrieve variables TODO
+        // Retrieve variables TODO and set group name
 
         // Toolbar
         toolbar = (Toolbar) findViewById(R.id.group_settings_toolbar);
@@ -86,28 +90,33 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
         // Existing members
         ListView existingMembers = (ListView) findViewById(R.id.editgroup_existing_members_listview);
-        existingMembers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // do something
-            }
-        });
         ArrayAdapter<String> membersAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, currentMembers);
         existingMembers.setAdapter(membersAdapter);
         ViewHelper.justifyListViewHeightBasedOnChildren(existingMembers);
 
         // New Members
-        membersListLayout = (LinearLayout) findViewById(R.id.editgroup_members_list);
+        membersListLayout = (LinearLayout) findViewById(R.id.groupsettings_add_members_list);
         inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        addButton = (Button) findViewById(R.id.editgroup_add_member_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
+        addMembersButton = (Button) findViewById(R.id.groupsettings_addmembers_button);
+        addMembersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                membersListLayout.addView(createACTV());
+                if (membersListLayout.getChildCount() == 0) {
+                    membersListLayout.addView(createACTV());
+                } else {
+                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
+                            .getChildAt(membersListLayout.getChildCount() - 1);
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
+                        lastACTV.requestFocus();
+                    else membersListLayout.addView(createACTV());
+                }
             }
         });
+
+        // Group Name
+        groupName = (EditText) findViewById(R.id.group_name_edittext);
 
         // Finished Button
         submitButton = (Button) findViewById(R.id.editgroup_submit_button);
@@ -129,11 +138,26 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
     private AutoCompleteTextView createACTV() {
         AutoCompleteTextView memberET = (AutoCompleteTextView) inflater.inflate(R.layout.add_member_edittext, null);
-        ContactsAdapter adapter = new ContactsAdapter(context, R.layout.search_contacts_item, GetContacts.get(context));
+        memberET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
+                            .getChildAt(membersListLayout.getChildCount() - 1);
+                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
+                        lastACTV.requestFocus();
+                    else membersListLayout.addView(createACTV());
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+        List<Contact> contacts = GetContacts.get(context);
+        ContactsAdapter adapter = new ContactsAdapter(context, GetContacts.get((context)));
         memberET.setAdapter(adapter);
         return memberET;
     }
-
 
     private void submit() {
         // check if group name has changed (via variable comparison - name on activity create vs edittext content?

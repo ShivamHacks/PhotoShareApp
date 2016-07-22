@@ -4,57 +4,60 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".AddGroupActivity">
+
+    <include
+        android:id="@+id/add_group_activity_tool_bar"
+        layout="@layout/toolbar_layout"></include>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#ECEFF1">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentStart="true">
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/editText_group_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:hint="Group Name" />
+            <!-- Change Group Name -->
+            <LinearLayout style="@style/settings_container">
+                <EditText
+                    android:id="@+id/editText_group_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:inputType="textCapSentences|textAutoCorrect"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:hint="Group Name" />
+            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/members_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editText_group_name"
-                android:orientation="vertical" />
+            <!-- Add Members UI -->
+            <LinearLayout style="@style/settings_container">
+                <LinearLayout
+                    android:id="@+id/members_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"></LinearLayout>
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/add_member_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/members_list"
-                android:text="Add Member" />
+            <!-- Submit Button -->
+            <LinearLayout style="@style/settings_container">
+                <Button
+                    android:id="@+id/submit_new_group_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Done" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/submit_new_group_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/add_member_button"
-                android:text="Done" />
-
-        </RelativeLayout>
+        </LinearLayout>
 
 
     </ScrollView>

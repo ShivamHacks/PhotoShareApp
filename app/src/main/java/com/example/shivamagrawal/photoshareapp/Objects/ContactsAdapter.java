@@ -15,12 +15,10 @@ import com.example.shivamagrawal.photoshareapp.R;
 
 public class ContactsAdapter extends ArrayAdapter<Contact> {
 
-    private int layoutResource;
     final List<Contact> members;
 
-    public ContactsAdapter(Context context, int layoutResource, List<Contact> items) {
-        super(context, layoutResource, items);
-        this.layoutResource = layoutResource;
+    public ContactsAdapter(Context context, List<Contact> items) {
+        super(context, android.R.layout.simple_list_item_2, items);
         members = items;
 
     }
@@ -32,13 +30,13 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
 
         if (view == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-            view = layoutInflater.inflate(layoutResource, null);
+            view = layoutInflater.inflate(android.R.layout.simple_list_item_2, null);
         }
 
         Contact contact = getItem(position);
         if (contact != null) {
-            TextView contactName = (TextView) view.findViewById(R.id.search_contacts_name);
-            TextView contactNumber = (TextView) view.findViewById(R.id.search_contacts_number);
+            TextView contactName = (TextView) view.findViewById(android.R.id.text1);
+            TextView contactNumber = (TextView) view.findViewById(android.R.id.text2);
             contactName.setText(contact.getName());
             contactNumber.setText(contact.getNumber());
         }
