@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.*;
 import android.view.*;
 import android.widget.*;
+import android.os.*;
 
 import java.util.*;
 
@@ -143,37 +144,43 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             public void onPictureTaken(byte[] data, Camera camera) {
                 Log.d("PIC", "CAPTURED");
 
-                if (data != null) {
-                    int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                    int screenHeight = getResources().getDisplayMetrics().heightPixels;
-                    Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                        Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
-                        int w = scaled.getWidth();
-                        int h = scaled.getHeight();
-                        Matrix mtx = new Matrix();
-                        mtx.postRotate(90);
-                        bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
-                    } else { // LANDSCAPE MODE
-                        bm = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
-                    }
-
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.PNG, 100, baos); // quality doesn't matter b/c PNG is lossless
-                    byte[] imageBytes = baos.toByteArray();
-                    String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-                    //Log.d("IMG", encodedImage);
-                    //reqGet(encodedImage);
-                    //sendJSON(encodedImage);
-                    sendImage(encodedImage);
-
-                    MediaStore.Images.Media.insertImage(getContentResolver(), bm, "LOL", "LOLOL"); // store in image gallery
-                }
+                if (data != null)
+                    new UploadPhoto().execute(data);
 
                 mCamera.startPreview();
             }
         });
+    }
+
+    private class UploadPhoto extends AsyncTask<byte[], Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(byte[]... params) {
+            byte[] data = params[0];
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+                int w = scaled.getWidth();
+                int h = scaled.getHeight();
+                Matrix mtx = new Matrix();
+                mtx.postRotate(90);
+                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
+            } else { // LANDSCAPE MODE
+                bm = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.PNG, 100, baos); // quality doesn't matter b/c PNG is lossless
+            byte[] imageBytes = baos.toByteArray();
+            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            Log.d("ENCODED", encodedImage);
+
+            //sendImage(encodedImage);
+            //MediaStore.Images.Media.insertImage(getContentResolver(), bm, "LOL", "LOLOL"); // store in image gallery
+
+            return true;
+        }
     }
 
     private void reqGet(final String image) {
