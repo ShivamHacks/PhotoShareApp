@@ -12,6 +12,7 @@ import android.util.*;
 import android.view.*;
 import android.widget.*;
 import android.os.*;
+import android.graphics.Point;
 
 import java.util.*;
 
@@ -21,6 +22,10 @@ import android.provider.MediaStore;
 
 import android.content.res.Configuration;
 import android.graphics.Matrix;
+import android.content.pm.ActivityInfo;
+import android.view.animation.RotateAnimation;
+import android.view.animation.Animation;
+import android.hardware.SensorManager;
 
 import java.io.ByteArrayOutputStream;
 
@@ -45,6 +50,10 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     private ImageView switchCameras;
 
     private Context context;
+    OrientationEventListener mOrientationListener;
+
+    boolean portrait = true;
+    int currentAngle = 0;
 
     private int currrentCamID = Camera.CameraInfo.CAMERA_FACING_BACK;
 
@@ -52,6 +61,9 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
+        Log.d("CREATED", "LOL");
+
         context = this;
 
         surfaceView = (SurfaceView) findViewById(R.id.camera_preview_surfaceview);
@@ -85,6 +97,47 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 switchCameras();
             }
         });
+
+        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (45 <= orientation && orientation <= 135) {
+                    // LANDSCAPE
+                    if (portrait) {
+                        finishCamera.startAnimation(getRotateAnim(-90));
+                        captureImage.startAnimation(getRotateAnim(-90));
+                        switchCameras.startAnimation(getRotateAnim(-90));
+                        currentAngle = -90;
+                    }
+                    portrait = false;
+                } else if(225 <= orientation && orientation <= 315) {
+                    // LANDSCAPE
+                    if (portrait) {
+                        finishCamera.startAnimation(getRotateAnim(90));
+                        captureImage.startAnimation(getRotateAnim(90));
+                        switchCameras.startAnimation(getRotateAnim(90));
+                        currentAngle = 90;
+                    }
+                    portrait = false;
+                } else {
+                    // PORTRAIT
+                    if (!portrait) {
+                        finishCamera.startAnimation(getRotateAnim(0));
+                        captureImage.startAnimation(getRotateAnim(0));
+                        switchCameras.startAnimation(getRotateAnim(0));
+                        currentAngle = 0;
+                    }
+                    portrait = true;
+                }
+            }
+        };
+        if (mOrientationListener.canDetectOrientation() == true) {
+            Log.d("ORIENT", "Can detect orientation");
+            mOrientationListener.enable();
+        } else {
+            Log.d("ORIENT", "Cannot detect orientation");
+            mOrientationListener.disable();
+        }
     }
 
     private void openCamera() {
@@ -118,6 +171,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             mCamera.release();
             mCamera = null;
         }
+        mOrientationListener.disable();
         finish();
     }
 
@@ -148,19 +202,24 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     private class UploadPhoto extends AsyncTask<byte[], Void, Boolean> {
         @Override
         protected Boolean doInBackground(byte[]... params) {
+            //Log.d("ORIENTATION", getScreenOrientation() + "");
+
+
             byte[] data = params[0];
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
             int screenHeight = getResources().getDisplayMetrics().heightPixels;
             Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
-                int w = scaled.getWidth();
-                int h = scaled.getHeight();
-                Matrix mtx = new Matrix();
+            // Orientation stuff
+            Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+            int w = scaled.getWidth();
+            int h = scaled.getHeight();
+            Matrix mtx = new Matrix();
+            if (portrait) {
                 mtx.postRotate(90);
                 bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
             } else { // LANDSCAPE MODE
-                bm = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
+                mtx.postRotate(180);
+                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
             }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -186,11 +245,19 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             );
             Server.makeRequest(context, sr);
 
-            //sendImage(encodedImage);
+            // Save image locally
             //MediaStore.Images.Media.insertImage(getContentResolver(), bm, "LOL", "LOLOL"); // store in image gallery
 
             return true;
         }
+    }
+
+    private RotateAnimation getRotateAnim(int change) {
+        RotateAnimation rotate = new RotateAnimation(currentAngle, change,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(500);
+        rotate.setFillAfter(true);
+        return rotate;
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
@@ -235,7 +302,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        openCamera();
+        if (mCamera == null) { openCamera(); }
     }
 
     @Override
@@ -263,7 +330,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
 
     // TESTING STUFF
 
-    http://stackoverflow.com/questions/18594602/how-to-implement-pinch-zoom-feature-for-camera-preview
+    // http://stackoverflow.com/questions/18594602/how-to-implement-pinch-zoom-feature-for-camera-preview
 
     private float mDist;
 

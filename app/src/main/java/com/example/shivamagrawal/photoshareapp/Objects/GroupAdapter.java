@@ -14,7 +14,6 @@ import java.util.List;
 
 import com.chauthai.swipereveallayout.SwipeRevealLayout;
 import com.chauthai.swipereveallayout.ViewBinderHelper;
-import com.example.shivamagrawal.photoshareapp.AddGroupActivity;
 import com.example.shivamagrawal.photoshareapp.CameraActivity;
 import com.example.shivamagrawal.photoshareapp.GalleryActivity;
 import com.example.shivamagrawal.photoshareapp.GroupSettingsActivity;
