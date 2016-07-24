@@ -38,8 +38,6 @@ import com.example.shivamagrawal.photoshareapp.Objects.Server;
 @SuppressWarnings("deprecation")
 public class CameraActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    // TODO: allow zoom, tap-to-focus, and filters
-
     private Camera mCamera;
 
     private SurfaceView surfaceView;
@@ -50,11 +48,11 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     private ImageView switchCameras;
 
     private Context context;
-    OrientationEventListener mOrientationListener;
+    private int screenWidth;
+    private int screenHeight;
 
-    boolean portrait = true;
-    int currentAngle = 0;
-
+    private boolean portrait = true;
+    private int currentAngle = 0;
     private int currrentCamID = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     @Override
@@ -62,12 +60,12 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        Log.d("CREATED", "LOL");
-
         context = this;
+        screenWidth = getResources().getDisplayMetrics().widthPixels;
+        screenHeight = getResources().getDisplayMetrics().heightPixels;
 
+        // Camera Preview
         surfaceView = (SurfaceView) findViewById(R.id.camera_preview_surfaceview);
-
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(CameraActivity.this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -98,14 +96,18 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             }
         });
 
-        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+        // Orientation Listener
+        setOrientationListener();
+    }
+
+    private void setOrientationListener() {
+        new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
             @Override
             public void onOrientationChanged(int orientation) {
                 if (45 <= orientation && orientation <= 135) {
                     // LANDSCAPE
                     if (portrait) {
                         finishCamera.startAnimation(getRotateAnim(-90));
-                        captureImage.startAnimation(getRotateAnim(-90));
                         switchCameras.startAnimation(getRotateAnim(-90));
                         currentAngle = -90;
                     }
@@ -113,8 +115,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 } else if(225 <= orientation && orientation <= 315) {
                     // LANDSCAPE
                     if (portrait) {
-                        finishCamera.startAnimation(getRotateAnim(90));
-                        captureImage.startAnimation(getRotateAnim(90));
+                        finishCamera.startAnimation(getRotateAnim(-90));
                         switchCameras.startAnimation(getRotateAnim(90));
                         currentAngle = 90;
                     }
@@ -123,21 +124,13 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                     // PORTRAIT
                     if (!portrait) {
                         finishCamera.startAnimation(getRotateAnim(0));
-                        captureImage.startAnimation(getRotateAnim(0));
                         switchCameras.startAnimation(getRotateAnim(0));
                         currentAngle = 0;
                     }
                     portrait = true;
                 }
             }
-        };
-        if (mOrientationListener.canDetectOrientation() == true) {
-            Log.d("ORIENT", "Can detect orientation");
-            mOrientationListener.enable();
-        } else {
-            Log.d("ORIENT", "Cannot detect orientation");
-            mOrientationListener.disable();
-        }
+        }.enable();
     }
 
     private void openCamera() {
@@ -171,7 +164,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             mCamera.release();
             mCamera = null;
         }
-        mOrientationListener.disable();
         finish();
     }
 
@@ -193,57 +185,75 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 if (data != null)
-                    new UploadPhoto().execute(data);
+                    new UploadPhoto().execute(new UploadPhotoParams(data, currentAngle, currrentCamID, portrait));
                 mCamera.startPreview();
             }
         });
     }
 
-    private class UploadPhoto extends AsyncTask<byte[], Void, Boolean> {
+    private class UploadPhotoParams {
+        byte[] data;
+        int cAngle;
+        int currentCam;
+        boolean portrait;
+        public UploadPhotoParams(byte[] data, int cAngle, int currentCam, boolean portrait) {
+            this.data = data;
+            this.cAngle = cAngle;
+            this.currentCam = currentCam;
+            this.portrait = portrait;
+        }
+    }
+
+    private class UploadPhoto extends AsyncTask<UploadPhotoParams, Void, Boolean> {
         @Override
-        protected Boolean doInBackground(byte[]... params) {
-            //Log.d("ORIENTATION", getScreenOrientation() + "");
-
-
-            byte[] data = params[0];
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
-            Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-            // Orientation stuff
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
-            int w = scaled.getWidth();
-            int h = scaled.getHeight();
-            Matrix mtx = new Matrix();
-            if (portrait) {
-                mtx.postRotate(90);
-                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
-            } else { // LANDSCAPE MODE
-                mtx.postRotate(180);
-                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
-            }
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.PNG, 100, baos); // quality doesn't matter b/c PNG is lossless
-            byte[] imageBytes = baos.toByteArray();
-            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-            Map<String, String> parameters = new HashMap<String, String>();
-            parameters.put("image", encodedImage);
-            StringRequest sr = Server.POST(parameters, Server.uploadPhotoURL,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.d("RES", response.isEmpty()?"EMPTY RESPONSE": response);
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.d("ERR", "ERR");
-                        }
+        protected Boolean doInBackground(UploadPhotoParams... params) {
+            // Surround with try/catch
+            try {
+                UploadPhotoParams parameters = params[0];
+                byte[] data = parameters.data;
+                /*Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+                int w = scaled.getWidth();
+                int h = scaled.getHeight();
+                Matrix mtx = new Matrix();
+                if (parameters.portrait) {
+                    if (parameters.currentCam == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        mtx.postRotate(-90);
+                    } else mtx.postRotate(90);
+                } else { // LANDSCAPE MODE
+                    if (parameters.currentCam == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        if (parameters.cAngle == -90) mtx.postRotate(180);
+                    } else {
+                        if (parameters.cAngle == -90) mtx.postRotate(-180);
                     }
-            );
-            Server.makeRequest(context, sr);
+                }
+                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bm.compress(Bitmap.CompressFormat.PNG, 100, baos); // quality doesn't matter b/c PNG is lossless
+                byte[] imageBytes = baos.toByteArray();*/
+                String encodedImage = Base64.encodeToString(data, Base64.DEFAULT);
+
+                Map<String, String> postParameters = new HashMap<String, String>();
+                postParameters.put("image", encodedImage);
+                StringRequest sr = Server.POST(postParameters, Server.uploadPhotoURL,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.d("RES", response.isEmpty() ? "EMPTY RESPONSE" : response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d("ERR", "ERR");
+                            }
+                        }
+                );
+                Server.makeRequest(context, sr);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
 
             // Save image locally
             //MediaStore.Images.Media.insertImage(getContentResolver(), bm, "LOL", "LOLOL"); // store in image gallery
