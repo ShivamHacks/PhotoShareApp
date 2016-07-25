@@ -67,6 +67,7 @@ public class GroupAdapter extends ArrayAdapter<Group> {
                 public void onClick(View view) {
                     Log.d("PHOTO ACTION", "" + position);
                     Intent capture = new Intent(context, CameraActivity.class);
+                    capture.putExtra("groupID", group.getID());
                     context.startActivity(capture);
                 }
             });

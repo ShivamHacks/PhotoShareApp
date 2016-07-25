@@ -14,6 +14,8 @@ import android.view.WindowManager;
 import android.view.Display;
 import android.graphics.Point;
 
+import android.util.Log;
+
 public class GalleryAdapter extends BaseAdapter {
 
     private Context context;
@@ -57,9 +59,8 @@ public class GalleryAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
-
+        Log.d("LOADING", photoURLs.get(position));
         Glide.with(context).load(photoURLs.get(position)).centerCrop().into(imageView);
-        //imageView.setImageResource(mThumbIds[position]);
         return imageView;
     }
 

@@ -1,7 +1,5 @@
 package com.example.shivamagrawal.photoshareapp;
 
-import android.graphics.Color;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -12,18 +10,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -39,6 +32,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
+    TextView noGroupsTV;
     ListView groupsList;
     GroupAdapter groupAdapter;
     ArrayList<Group> groups = new ArrayList<Group>();
@@ -57,7 +51,10 @@ public class MainActivity extends AppCompatActivity {
         groupAdapter = new GroupAdapter(this, groups);
         groupsList.setAdapter(groupAdapter);
 
-        //init();
+        noGroupsTV = (TextView) findViewById(R.id.nogroup_textview);
+
+        //clearPrefs();
+        init();
     }
 
     private void init() {
@@ -69,10 +66,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // TEMPORARY
+    private void clearPrefs() {
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     // CURRENT SYSTEM: loads groups every time activity launched/recreated
     private void getGroups() {
         groups.clear();
         Map<String, String> params = new HashMap<String, String>();
+        params.put("token", Server.getToken(context));
         StringRequest sr = Server.GET(params, Server.getAllGroupsURL,
                 new Response.Listener<String>() {
                     @Override
@@ -80,9 +86,14 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             JSONObject results = new JSONObject(s);
                             JSONArray groupsJSON = results.getJSONArray("groups");
-                            for (int i = 0; i < groupsJSON.length(); i++) {
-                                JSONObject group = new JSONObject(groupsJSON.get(i).toString());
-                                groups.add(new Group(group.getString("_id"), group.getString("groupName")));
+                            if (groupsJSON.length() == 0) {
+                                noGroupsTV.setText("No Groups. Create one by clicking the plus button");
+                            } else {
+                                noGroupsTV.setVisibility(View.GONE);
+                                for (int i = 0; i < groupsJSON.length(); i++) {
+                                    JSONObject group = new JSONObject(groupsJSON.get(i).toString());
+                                    groups.add(new Group(group.getString("groupID"), group.getString("groupName")));
+                                }
                             }
                             groupAdapter.notifyDataSetChanged();
                         } catch(JSONException e) {
@@ -114,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
-                getGroups();
+                // Logout, delete accounts
                 // TODO: account settings
                 return true;
             default:

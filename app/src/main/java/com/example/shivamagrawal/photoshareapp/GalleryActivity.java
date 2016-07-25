@@ -1,13 +1,18 @@
 package com.example.shivamagrawal.photoshareapp;
 
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.view.View;
 import android.content.Context;
@@ -15,6 +20,8 @@ import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.app.Dialog;
 import android.view.Window;
+import android.widget.TextView;
+import android.view.WindowManager.LayoutParams;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +34,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
 import com.example.shivamagrawal.photoshareapp.Objects.GalleryAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
+import com.example.shivamagrawal.photoshareapp.Objects.PhotoAdapter;
+import com.example.shivamagrawal.photoshareapp.Objects.PhotoFragment;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONArray;
@@ -39,9 +48,10 @@ public class GalleryActivity extends AppCompatActivity {
     Context context;
     String groupID;
     LayoutInflater inflater;
+    TextView noImagesTV;
 
     GalleryAdapter galleryAdapter;
-    List<String> urls = new ArrayList<String>();
+    ArrayList<String> urls = new ArrayList<String>();
     boolean loadingURLS = true;
 
     @Override
@@ -64,18 +74,14 @@ public class GalleryActivity extends AppCompatActivity {
         galleryAdapter = new GalleryAdapter(this, urls);
         gridview.setAdapter(galleryAdapter);
 
-        inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = (LayoutInflater) getApplicationContext()
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        noImagesTV = (TextView) findViewById(R.id.noimages_textview);
 
         gridview.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                // TODO: need to fix this
-                Dialog photoDialog = new Dialog(context);
-                photoDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-                RelativeLayout layout = (RelativeLayout) getLayoutInflater().inflate(R.layout.photo_view, null);
-                ImageView photo = (ImageView) layout.findViewById(R.id.photo_imageview);
-                Glide.with(context).load(urls.get(position)).into(photo);
-                photoDialog.setContentView(layout);
-                photoDialog.show();
+                if (!loadingURLS) showFragment(position);
             }
         });
 
@@ -83,10 +89,23 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
+    private void showFragment(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("photoURLs", urls);
+        bundle.putInt("position", position);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        PhotoFragment pager = new PhotoFragment();
+        pager.setArguments(bundle);
+        ft.add(pager, null).commit();
+    }
+
     private void init() {
 
         // Get Photo URLS
         Map<String, String> params = new HashMap<String, String>();
+        params.put("token", Server.getToken(context));
+        params.put("groupID", groupID);
         StringRequest sr = Server.GET(params, Server.getAllPhotosURL,
                 new Response.Listener<String>() {
                     @Override
@@ -95,9 +114,17 @@ public class GalleryActivity extends AppCompatActivity {
                             JSONObject results = new JSONObject(s);
                             Log.d("RES", s);
                             JSONArray urlsJSON = results.getJSONArray("photoURLS");
-                            for (int i = 0; i < urlsJSON.length(); i++)
-                                urls.add(urlsJSON.get(i).toString());
-                            galleryAdapter.notifyDataSetChanged();
+                            if (urlsJSON.length() == 0) {
+                                noImagesTV.setText("No Images in this group yet");
+                            } else {
+                                noImagesTV.setVisibility(View.GONE);
+                                for (int i = 0; i < urlsJSON.length(); i++) {
+                                    Log.d("URL", urlsJSON.get(i).toString());
+                                    urls.add(urlsJSON.get(i).toString());
+                                }
+                                galleryAdapter.notifyDataSetChanged();
+                                loadingURLS = false;
+                            }
                         } catch(JSONException e) {
                             e.printStackTrace();
                         }

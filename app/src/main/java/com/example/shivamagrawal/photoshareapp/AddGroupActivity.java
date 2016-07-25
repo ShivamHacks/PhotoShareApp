@@ -131,7 +131,8 @@ public class AddGroupActivity extends AppCompatActivity {
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
                 String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                phoneNumbers.add(member);
+                if (!phoneNumbers.contains(member))
+                    phoneNumbers.add(member);
             }
             for (int j = 0; j < phoneNumbers.size(); j++)
                 params.put("members[" + j + "]", phoneNumbers.get(j));
@@ -139,6 +140,7 @@ public class AddGroupActivity extends AppCompatActivity {
         }
 
         // Post to server
+        params.put("token", Server.getToken(context));
         StringRequest sr = Server.POST(params, Server.createGroupURL,
                 new Response.Listener<String>() {
                     @Override

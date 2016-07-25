@@ -48,6 +48,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     private ImageView switchCameras;
 
     private Context context;
+    private String groupID;
     private int screenWidth;
     private int screenHeight;
 
@@ -61,6 +62,10 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         setContentView(R.layout.activity_camera);
 
         context = this;
+
+        Bundle extras = getIntent().getExtras();
+        groupID = extras.getString("groupID");
+
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight = getResources().getDisplayMetrics().heightPixels;
 
@@ -211,31 +216,26 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             try {
                 UploadPhotoParams parameters = params[0];
                 byte[] data = parameters.data;
-                /*Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
-                int w = scaled.getWidth();
-                int h = scaled.getHeight();
-                Matrix mtx = new Matrix();
-                if (parameters.portrait) {
-                    if (parameters.currentCam == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        mtx.postRotate(-90);
-                    } else mtx.postRotate(90);
-                } else { // LANDSCAPE MODE
-                    if (parameters.currentCam == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        if (parameters.cAngle == -90) mtx.postRotate(180);
-                    } else {
-                        if (parameters.cAngle == -90) mtx.postRotate(-180);
-                    }
-                }
-                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bm.compress(Bitmap.CompressFormat.PNG, 100, baos); // quality doesn't matter b/c PNG is lossless
-                byte[] imageBytes = baos.toByteArray();*/
                 String encodedImage = Base64.encodeToString(data, Base64.DEFAULT);
+
+                /* Back Camera
+                Portrait: rotate -90
+                Landscape Lefty: rotate 180
+                Landscape Righty: No change
+                 */
+
+                /* Front Camera
+                Portrait: rotate 90
+                Landscape Lefty: rotate 180
+                Landscape Righty: No change
+                 */
 
                 Map<String, String> postParameters = new HashMap<String, String>();
                 postParameters.put("image", encodedImage);
+                postParameters.put("groupID", groupID);
+                postParameters.put("capturedAt", Long.toString(System.currentTimeMillis()));
+                postParameters.put("token", Server.getToken(context));
+                // todo: put rotate parameters
                 StringRequest sr = Server.POST(postParameters, Server.uploadPhotoURL,
                         new Response.Listener<String>() {
                             @Override
@@ -347,7 +347,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Get the pointer ID
-        Log.d("TOUCHED", "TOUCH YAY!!!");
         Camera.Parameters params = mCamera.getParameters();
         int action = event.getAction();
 
@@ -379,8 +378,8 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 zoom++;
         } else if (newDist < mDist) {
             //zoom out
-            if (zoom > 0)
-                zoom--;
+            if (zoom > 1)
+                zoom = zoom - 2;
         }
         mDist = newDist;
         params.setZoom(zoom);
