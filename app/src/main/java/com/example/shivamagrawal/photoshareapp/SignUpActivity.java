@@ -1,5 +1,6 @@
 package com.example.shivamagrawal.photoshareapp;
 
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -19,34 +20,35 @@ import com.android.volley.toolbox.Volley;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-// TODO: server stuff in async
 
 public class SignUpActivity extends AppCompatActivity {
 
     EditText phoneNumber;
     EditText password1;
     EditText password2;
-    EditText vertificationCode;
+    EditText verificationCode;
     Button signUpSubmit;
     Button signUpVerify;
-
-    String userID = "";
-    String countryISO = "";
+    Context context;
+    String userID;
+    String countryISO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
+        context = this;
+
         phoneNumber = (EditText) findViewById(R.id.signup_phone_number);
         password1 = (EditText) findViewById(R.id.signup_password_1);
         password2 = (EditText) findViewById(R.id.signup_password_2);
-        vertificationCode = (EditText) findViewById(R.id.signup_verification_code);
+        verificationCode = (EditText) findViewById(R.id.signup_verification_code);
 
         signUpSubmit = (Button) findViewById(R.id.signup_submit);
         signUpSubmit.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +85,6 @@ public class SignUpActivity extends AppCompatActivity {
                 || TextUtils.isEmpty(password2.getText().toString().trim())) {
             allGood = false;
         }
-        Log.d("CHECK", Boolean.toString(allGood));
         return allGood;
     }
 
@@ -93,79 +94,75 @@ public class SignUpActivity extends AppCompatActivity {
         params.put("password", password1.getText().toString());
         params.put("countryISO", countryISO);
 
-        RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = Server.POST(params, Server.signupURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
-                        try {
-                            JSONObject result = new JSONObject(s);
-                            if (result.has("_id")) {
-                                userID = result.getString("_id");
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) {
+                            try {
+                                userID = body.getString("userID");
+                            } catch (JSONException e) {
+                                ResponseHandler.errorToast(context, "An error occured");
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        } else { ResponseHandler.errorToast(context, "An error occured"); }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("SIGNUP", volleyError.getMessage());
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );
-
-        queue.add(sr);
+        Server.makeRequest(context, sr);
     }
 
     private void verify() {
-        if (TextUtils.isEmpty(vertificationCode.getText().toString().trim()) || userID.equals("")) {
-            Log.d("ERROR", "LOL WAT");
+        if (TextUtils.isEmpty(verificationCode.getText().toString().trim()) || userID.equals("")) {
+            ResponseHandler.errorToast(context, "An error occured");
         } else {
 
             Map<String, String> params = new HashMap<String, String>();
             params.put("phoneNumber", phoneNumber.getText().toString());
-            params.put("verficationCode", vertificationCode.getText().toString());
+            params.put("verificationCode", verificationCode.getText().toString());
             params.put("userID", userID);
             params.put("countryISO", countryISO);
-
-            RequestQueue queue = Volley.newRequestQueue(this);
+            params.put("intent", "signup");
 
             StringRequest sr = Server.POST(params, Server.verifyURL,
                     new Response.Listener<String>() {
                         @Override
-                        public void onResponse(String s) {
-                            try {
-                                JSONObject result = new JSONObject(s);
-                                saveToken(result.getString("token"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                        public void onResponse(String res) {
+                            JSONObject body = new ResponseHandler(context, res).parseRes();
+                            if (body != null) {
+                                try {
+                                    saveToken(body.getString("token"));
+                                } catch (JSONException e) {
+                                    ResponseHandler.errorToast(context, "An error occured");
+                                    e.printStackTrace();
+                                }
+                            } else { ResponseHandler.errorToast(context, "An error occured"); }
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
-                            Log.d("VERIFY", volleyError.getMessage());
+                            ResponseHandler.errorToast(context, "An error occured");
                         }
                     }
             );
-
-            queue.add(sr);
-
+            Server.makeRequest(context, sr);
         }
     }
 
     private void saveToken(String token) {
-        Intent returnIntent = new Intent();
-        if (TextUtils.isEmpty(token)) {
-            returnIntent.putExtra("success", false);
-        } else {
-            returnIntent.putExtra("success", true);
-            returnIntent.putExtra("token", token);
-            setResult(Activity.RESULT_OK, returnIntent);
-        }
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("token", token);
+        editor.putBoolean("loggedIn", true);
+        editor.commit();
         finish();
     }
 

@@ -23,6 +23,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
 import com.example.shivamagrawal.photoshareapp.Objects.GroupAdapter;
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONArray;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         noGroupsTV = (TextView) findViewById(R.id.nogroup_textview);
 
-        //clearPrefs();
+        //clearPrefs(); // TEMPORARY
         init();
     }
 
@@ -82,33 +83,38 @@ public class MainActivity extends AppCompatActivity {
         StringRequest sr = Server.GET(params, Server.getAllGroupsURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
-                        try {
-                            JSONObject results = new JSONObject(s);
-                            JSONArray groupsJSON = results.getJSONArray("groups");
-                            if (groupsJSON.length() == 0) {
-                                noGroupsTV.setText("No Groups. Create one by clicking the plus button");
-                            } else {
-                                noGroupsTV.setVisibility(View.GONE);
-                                for (int i = 0; i < groupsJSON.length(); i++) {
-                                    JSONObject group = new JSONObject(groupsJSON.get(i).toString());
-                                    groups.add(new Group(group.getString("groupID"), group.getString("groupName")));
-                                }
-                            }
-                            groupAdapter.notifyDataSetChanged();
-                        } catch(JSONException e) {
-                            e.printStackTrace();
-                        }
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) changeGroupList(body);
+                        else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("ERR", "ERR");
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );
         Server.makeRequest(context, sr);
+    }
+
+    private void changeGroupList(JSONObject body) {
+        try {
+            JSONArray groupsJSON = body.getJSONArray("groups");
+            if (groupsJSON.length() == 0) {
+                noGroupsTV.setText("No Groups. Create one by clicking the plus button");
+            } else {
+                noGroupsTV.setVisibility(View.GONE);
+                for (int i = 0; i < groupsJSON.length(); i++) {
+                    JSONObject group = new JSONObject(groupsJSON.get(i).toString());
+                    groups.add(new Group(group.getString("groupID"), group.getString("groupName")));
+                }
+            }
+            groupAdapter.notifyDataSetChanged();
+        } catch (JSONException e) {
+            ResponseHandler.errorToast(context, "An error occured");
+        }
     }
 
     @Override
@@ -125,8 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
-                // Logout, delete accounts
-                // TODO: account settings
+                Intent accountSettings = new Intent(this, AccountSettingsActivity.class);
+                startActivity(accountSettings);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

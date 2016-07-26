@@ -30,6 +30,7 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent logIn = new Intent(context, LoginActivity.class);
                 startActivity(logIn);
+                finish();
             }
         });
 
@@ -37,27 +38,10 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent signUp = new Intent(context, SignUpActivity.class);
-                startActivityForResult(signUp, 1);
+                startActivity(signUp);
+                finish();
             }
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Check which request we're responding to
-        if (requestCode == 1) {
-            // Make sure the request was successful
-            if (resultCode == Activity.RESULT_OK) {
-                SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                if (data.getBooleanExtra("success", false)) {
-                    String token = data.getStringExtra("token");
-                    editor.putString("token", token);
-                    editor.putBoolean("loggedIn", true);
-                    editor.commit();
-                }
-                finish();
-            }
-        }
-    }
 }

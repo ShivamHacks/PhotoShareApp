@@ -6,34 +6,32 @@ import android.support.v7.app.AppCompatActivity;
 import java.io.IOException;
 
 import android.hardware.Camera;
-
-import android.os.Bundle;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
-import android.os.*;
-import android.graphics.Point;
-
-import java.util.*;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.provider.MediaStore;
-
-import android.content.res.Configuration;
-import android.graphics.Matrix;
-import android.content.pm.ActivityInfo;
+import android.util.Base64;
+import android.view.View;
+import android.view.OrientationEventListener;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
+import android.view.MotionEvent;
+import android.widget.ImageView;
 import android.view.animation.RotateAnimation;
 import android.view.animation.Animation;
 import android.hardware.SensorManager;
 
-import java.io.ByteArrayOutputStream;
+import android.os.Bundle;
+import android.os.AsyncTask;
+
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
+
+import org.json.JSONObject;
 
 @SuppressWarnings("deprecation")
 public class CameraActivity extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -217,6 +215,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 UploadPhotoParams parameters = params[0];
                 byte[] data = parameters.data;
                 String encodedImage = Base64.encodeToString(data, Base64.DEFAULT);
+                uploadToServer(encodedImage);
 
                 /* Back Camera
                 Portrait: rotate -90
@@ -230,36 +229,39 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 Landscape Righty: No change
                  */
 
-                Map<String, String> postParameters = new HashMap<String, String>();
-                postParameters.put("image", encodedImage);
-                postParameters.put("groupID", groupID);
-                postParameters.put("capturedAt", Long.toString(System.currentTimeMillis()));
-                postParameters.put("token", Server.getToken(context));
-                // todo: put rotate parameters
-                StringRequest sr = Server.POST(postParameters, Server.uploadPhotoURL,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                Log.d("RES", response.isEmpty() ? "EMPTY RESPONSE" : response);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d("ERR", "ERR");
-                            }
-                        }
-                );
-                Server.makeRequest(context, sr);
             } catch(Exception e) {
                 e.printStackTrace();
             }
 
-            // Save image locally
-            //MediaStore.Images.Media.insertImage(getContentResolver(), bm, "LOL", "LOLOL"); // store in image gallery
-
             return true;
         }
+    }
+
+    private void uploadToServer(String encodedImage) {
+        Map<String, String> postParameters = new HashMap<String, String>();
+        postParameters.put("image", encodedImage);
+        postParameters.put("groupID", groupID);
+        postParameters.put("capturedAt", Long.toString(System.currentTimeMillis()));
+        postParameters.put("token", Server.getToken(context));
+        // TODO: put rotate parameters
+        StringRequest sr = Server.POST(postParameters, Server.uploadPhotoURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body == null) ResponseHandler
+                                .errorToast(context, "An error occured while uploading photo");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        ResponseHandler
+                                .errorToast(context, "An error occured while uploading photo");
+                    }
+                }
+        );
+        Server.makeRequest(context, sr);
     }
 
     private RotateAnimation getRotateAnim(int change) {
@@ -303,12 +305,10 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-    }
+    public void surfaceCreated(SurfaceHolder holder) {}
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-    }
+    public void surfaceDestroyed(SurfaceHolder holder) {}
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -338,32 +338,19 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         }
     }
 
-    // TESTING STUFF
-
-    // http://stackoverflow.com/questions/18594602/how-to-implement-pinch-zoom-feature-for-camera-preview
-
     private float mDist;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Get the pointer ID
         Camera.Parameters params = mCamera.getParameters();
         int action = event.getAction();
 
-
         if (event.getPointerCount() > 1) {
-            // handle multi-touch events
             if (action == MotionEvent.ACTION_POINTER_DOWN) {
                 mDist = getFingerSpacing(event);
             } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
-                //mCamera.cancelAutoFocus();
                 handleZoom(event, params);
             }
-        } else {
-            // handle single touch events
-            /*if (action == MotionEvent.ACTION_UP) {
-                handleFocus(event, params);
-            }*/
         }
         return true;
     }
@@ -384,24 +371,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
         mDist = newDist;
         params.setZoom(zoom);
         mCamera.setParameters(params);
-    }
-
-    public void handleFocus(MotionEvent event, Camera.Parameters params) {
-        int pointerId = event.getPointerId(0);
-        int pointerIndex = event.findPointerIndex(pointerId);
-        // Get the pointer's current position
-        float x = event.getX(pointerIndex);
-        float y = event.getY(pointerIndex);
-
-        List<String> supportedFocusModes = params.getSupportedFocusModes();
-        if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                @Override
-                public void onAutoFocus(boolean b, Camera camera) {
-                    // currently set to auto-focus on single touch
-                }
-            });
-        }
     }
 
     /** Determine the space between the first two fingers */

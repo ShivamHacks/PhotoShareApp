@@ -7,38 +7,30 @@ import android.widget.Toast;
 
 public class ResponseHandler {
 
-    // here, handle responses from requests (succesfull or not)
-    // and also have a static error method w/ a toast for non server (my fault) errors
-
-
-    // if error, make toast from err message
-
+    private Context context;
     private String res;
     private JSONObject body;
-    private JSONObject error;
 
-    public ResponseHandler(String res) {
+    public ResponseHandler(Context context, String res) {
+        this.context = context;
         this.res = res;
     }
 
-    private void parseRes() {
+    public JSONObject parseRes() {
         try {
             JSONObject results = new JSONObject(res);
             if (results.getBoolean("success")) {
-                body = results;
+                return results;
+            } else if (!results.getBoolean("success")) {
+                errorToast(context, results.getString("message"));
+                return null;
             } else {
-                error = results;
+                return null;
             }
         } catch (JSONException e) {
-            body = null;
             e.printStackTrace();
+            return null;
         }
-    }
-
-    // TODO need to work on sending the error if there is one
-
-    public JSONObject getBody() {
-        return body;
     }
 
     public static void errorToast(Context context, String message) {

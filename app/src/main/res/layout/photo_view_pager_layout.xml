@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:background="@null"
         android:src="@drawable/ic_arrow_back_white_24dp"
         android:id="@+id/finish_photo_pager"
         android:layout_alignParentTop="true"
