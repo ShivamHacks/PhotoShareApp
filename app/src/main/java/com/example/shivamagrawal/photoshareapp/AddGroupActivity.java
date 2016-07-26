@@ -31,6 +31,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONException;
@@ -144,22 +145,16 @@ public class AddGroupActivity extends AppCompatActivity {
         StringRequest sr = Server.POST(params, Server.createGroupURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
-                        /*try {
-                            JSONObject result = new JSONObject(s);
-                            if (result.getBoolean("success")) {
-                                // save group ID here
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }*/
-                        Log.d("SUC", "SUC");
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) finish();
+                        else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        //Log.d("ERR", "ERR");
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );

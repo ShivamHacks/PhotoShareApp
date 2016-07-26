@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
         noGroupsTV = (TextView) findViewById(R.id.nogroup_textview);
 
-        //clearPrefs(); // TEMPORARY
         init();
     }
 
@@ -65,14 +64,6 @@ public class MainActivity extends AppCompatActivity {
             Intent loginOrSignUp = new Intent(this, LoginOrSignUpActivity.class);
             startActivity(loginOrSignUp);
         }
-    }
-
-    // TEMPORARY
-    private void clearPrefs() {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.clear();
-        editor.commit();
     }
 
     // CURRENT SYSTEM: loads groups every time activity launched/recreated

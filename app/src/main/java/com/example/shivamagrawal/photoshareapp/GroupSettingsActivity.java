@@ -40,6 +40,7 @@ import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
 import org.json.JSONArray;
@@ -58,6 +59,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
     LinearLayout membersListLayout;
     LayoutInflater inflater;
     Button addMembersButton;
+    Button leaveGroupButton;
     Button submitButton;
     EditText groupNameET;
     Context context;
@@ -134,6 +136,14 @@ public class GroupSettingsActivity extends AppCompatActivity {
             }
         });
 
+        leaveGroupButton = (Button) findViewById(R.id.editgroup_leave_button);
+        leaveGroupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                leaveGroup();
+            }
+        });
+
         // Finished Button
         submitButton = (Button) findViewById(R.id.editgroup_submit_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -151,37 +161,37 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
     private void getGroupData() {
         Map<String, String> params = new HashMap<String, String>();
+        params.put("token", Server.getToken(context));
         params.put("groupID", groupID);
-        // TODO: put token and groupID in params
         StringRequest sr = Server.GET(params, Server.getGroupInfoURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
-                        try {
-                            Log.d("RES", s);
-                            JSONObject results = new JSONObject(s);
-                            JSONArray membersJSON = results.getJSONArray("members");
-                            Log.d("MEMBERS", membersJSON.toString());
-                            for (int i = 0; i < membersJSON.length(); i++) {
-                                Log.d("MEMBER", membersJSON.getString(i));
-                                currentMembers.add(membersJSON.getString(i));
-                            }
-                            Log.d("SIZE", currentMembers.size() + "");
-                            membersAdapter.notifyDataSetChanged();
-                            justifyListViewHeightBasedOnChildren(existingMembers);
-                        } catch(JSONException e) {
-                            e.printStackTrace();
-                        }
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) fillExistingMembersList(body);
+                        else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("ERR", "ERR");
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );
         Server.makeRequest(context, sr);
+    }
+
+    private void fillExistingMembersList(JSONObject body) {
+        try {
+            JSONArray membersJSON = body.getJSONArray("members");
+            for (int i = 0; i < membersJSON.length(); i++)
+                currentMembers.add(membersJSON.getString(i));
+            membersAdapter.notifyDataSetChanged();
+            justifyListViewHeightBasedOnChildren(existingMembers);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private AutoCompleteTextView createACTV() {
@@ -233,11 +243,12 @@ public class GroupSettingsActivity extends AppCompatActivity {
     private void submit() {
         // Define params
         Map<String, String> params = new HashMap<String, String>();
+        params.put("groupID", groupID);
 
         // Put params if valid
         if (!(groupName.equals(groupNameET.getText().toString())) &&
                 !(TextUtils.isEmpty(groupNameET.getText().toString())))
-            params.put("groupName", groupNameET.getText().toString());
+            params.put("newName", groupNameET.getText().toString());
         if (membersListLayout.getChildCount() > 0) {
             List<String> phoneNumbers = new ArrayList<String>();
             for (int i = 0; i < membersListLayout.getChildCount(); i++) {
@@ -253,23 +264,48 @@ public class GroupSettingsActivity extends AppCompatActivity {
         }
 
         // Post to server
-        // params.put("token", Server.getToken(context)); --> Always do this
+        params.put("token", Server.getToken(context));
         StringRequest sr = Server.POST(params, Server.editGroupURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
-                        Log.d("RES", s);
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) finish();
+                        else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("ERR", "ERR");
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );
         Server.makeRequest(context, sr);
 
+    }
+
+    private void leaveGroup() {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("groupID", groupID);
+        params.put("token", Server.getToken(context));
+        StringRequest sr = Server.POST(params, Server.leaveGroupURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String res) {
+                        JSONObject body = new ResponseHandler(context, res).parseRes();
+                        if (body != null) finish();
+                        else ResponseHandler.errorToast(context, "An error occured");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        ResponseHandler.errorToast(context, "An error occured");
+                    }
+                }
+        );
+        Server.makeRequest(context, sr);
     }
 
 }

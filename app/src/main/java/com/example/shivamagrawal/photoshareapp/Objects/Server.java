@@ -32,12 +32,10 @@ public class Server {
     public static String getAllGroupsURL = getFullURL("/api/groups/getAllGroups");
     public static String getGroupInfoURL = getFullURL("/api/groups/getGroupInfo");
     public static String editGroupURL = getFullURL("/api/groups/editGroup");
-    public static String deleteGroupURL = getFullURL("/api/groups/deleteGroup");
     public static String leaveGroupURL = getFullURL("/api/groups/leaveGroup");
 
     // Photos
     public static String uploadPhotoURL = getFullURL("/api/photos/upload");
-    public static String getPhotoURL = getFullURL("/api/photos/get");
     public static String getAllPhotosURL = getFullURL("/api/photos/getAll");
 
     // StringRequest Generators
