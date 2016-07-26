@@ -41,7 +41,7 @@ public class PhotoAdapter extends PagerAdapter {
         RelativeLayout photoView = (RelativeLayout) inflater
                 .inflate(R.layout.photo_view, container, false);
         ImageView imageView = (ImageView) photoView.findViewById(R.id.photo_imageview);
-        Glide.with(context).load(photoURLS.get(position)).centerCrop().into(imageView);
+        Glide.with(context).load(photoURLS.get(position)).fitCenter().into(imageView);
         container.addView(photoView);
         return photoView;
     }

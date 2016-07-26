@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.content.pm.ActivityInfo;
 import java.util.ArrayList;
 import com.example.shivamagrawal.photoshareapp.R;
 

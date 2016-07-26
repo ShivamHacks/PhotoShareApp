@@ -12,36 +12,27 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ArrayAdapter;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.content.Context;
-import android.util.Log;
 
-import android.database.Cursor;
-import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
-import com.example.shivamagrawal.photoshareapp.Objects.Contact;
-import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
+import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
+import com.example.shivamagrawal.photoshareapp.Objects.PhoneNumberFormatter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
 
 public class AddGroupActivity extends AppCompatActivity {
 
@@ -54,7 +45,6 @@ public class AddGroupActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout membersListLayout;
     LayoutInflater inflater;
-    Button addButton;
     Button submitButton;
     EditText groupName;
     Context context;
@@ -74,7 +64,7 @@ public class AddGroupActivity extends AppCompatActivity {
 
         membersListLayout = (LinearLayout) findViewById(R.id.members_list);
         inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        membersListLayout.addView(createACTV()); // create First ACTV
+        membersListLayout.addView(ContactsHelper.createACTV(context, inflater, membersListLayout)); // create First ACTV
 
         submitButton = (Button) findViewById(R.id.submit_new_group_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -91,53 +81,36 @@ public class AddGroupActivity extends AppCompatActivity {
 
     }
 
-    // TODO: fix this so that I do not have to create new contact list every time new edittext created
-    // The reason this is currently how it is: Each edittext's total filtering pool is based on the previous edittext's filters
-    // Which means that each consecutive edittext's filtering became worse
-    private AutoCompleteTextView createACTV() {
-        AutoCompleteTextView memberET = (AutoCompleteTextView) inflater.inflate(R.layout.add_member_edittext, null);
-        memberET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
-                            .getChildAt(membersListLayout.getChildCount() - 1);
-                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
-                    else {
-                        AutoCompleteTextView newACTV = createACTV();
-                        newACTV.requestFocus();
-                        membersListLayout.addView(newACTV);
-                    }
-                    handled = true;
-                }
-                return handled;
-            }
-        });
-        ContactsAdapter adapter = new ContactsAdapter(context);
-        memberET.setAdapter(adapter);
-        return memberET;
-    }
-
     private void submit() {
+
+        // Currently, all group members must be in same country
+
         // Define params
         Map<String, String> params = new HashMap<String, String>();
+
+        // TODO: deal with iso
 
         // Put params if valid
         if (!(TextUtils.isEmpty(groupName.getText().toString())))
             params.put("groupName", groupName.getText().toString());
+
         if (membersListLayout.getChildCount() > 0) {
+
             List<String> phoneNumbers = new ArrayList<String>();
             for (int i = 0; i < membersListLayout.getChildCount(); i++) {
+
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
                 String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                if (!phoneNumbers.contains(member))
-                    phoneNumbers.add(member);
+                String formatted = PhoneNumberFormatter.formatOne(member, countryISO);
+
+                if (!phoneNumbers.contains(formatted) && formatted != null)
+                    phoneNumbers.add(formatted);
+
             }
             for (int j = 0; j < phoneNumbers.size(); j++)
                 params.put("members[" + j + "]", phoneNumbers.get(j));
-            params.put("countryISO", countryISO);
+
         }
 
         // Post to server

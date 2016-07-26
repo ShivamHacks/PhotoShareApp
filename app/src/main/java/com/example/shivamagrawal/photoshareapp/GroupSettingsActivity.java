@@ -1,10 +1,6 @@
 package com.example.shivamagrawal.photoshareapp;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -15,31 +11,22 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
-import android.util.Log;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.bumptech.glide.Glide;
-import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
-import com.example.shivamagrawal.photoshareapp.Objects.GetContacts;
-import com.example.shivamagrawal.photoshareapp.Objects.Group;
+import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
+import com.example.shivamagrawal.photoshareapp.Objects.PhoneNumberFormatter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -48,7 +35,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,14 +51,6 @@ public class GroupSettingsActivity extends AppCompatActivity {
     Context context;
 
     String groupName;
-
-    /*
-    Settings that can be changed: add members, delete members (can't edit members) and group name
-     */
-
-    /*
-    Loads existing group name (which is edittable) and existing members. Can add members or delete members
-     */
 
     List<String> currentMembers = new ArrayList<String>(); // current members
     ListView existingMembers;
@@ -122,13 +100,13 @@ public class GroupSettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (membersListLayout.getChildCount() == 0) {
-                    membersListLayout.addView(createACTV());
+                    membersListLayout.addView(ContactsHelper.createACTV(context, inflater, membersListLayout));
                 } else {
                     AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
                             .getChildAt(membersListLayout.getChildCount() - 1);
                     if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
                     else {
-                        AutoCompleteTextView newACTV = createACTV();
+                        AutoCompleteTextView newACTV = ContactsHelper.createACTV(context, inflater, membersListLayout);
                         newACTV.requestFocus();
                         membersListLayout.addView(newACTV);
                     }
@@ -194,31 +172,6 @@ public class GroupSettingsActivity extends AppCompatActivity {
         }
     }
 
-    private AutoCompleteTextView createACTV() {
-        AutoCompleteTextView memberET = (AutoCompleteTextView) inflater.inflate(R.layout.add_member_edittext, null);
-        memberET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
-                            .getChildAt(membersListLayout.getChildCount() - 1);
-                    if (TextUtils.isEmpty(lastACTV.getText().toString().trim())) { lastACTV.requestFocus(); }
-                    else {
-                        AutoCompleteTextView newACTV = createACTV();
-                        newACTV.requestFocus();
-                        membersListLayout.addView(newACTV);
-                    }
-                    handled = true;
-                }
-                return handled;
-            }
-        });
-        ContactsAdapter adapter = new ContactsAdapter(context);
-        memberET.setAdapter(adapter);
-        return memberET;
-    }
-
     private void justifyListViewHeightBasedOnChildren (ListView listView) {
         // http://stackoverflow.com/questions/12212890/disable-listview-scrolling
         ListAdapter adapter = listView.getAdapter();
@@ -249,18 +202,27 @@ public class GroupSettingsActivity extends AppCompatActivity {
         if (!(groupName.equals(groupNameET.getText().toString())) &&
                 !(TextUtils.isEmpty(groupNameET.getText().toString())))
             params.put("newName", groupNameET.getText().toString());
+
         if (membersListLayout.getChildCount() > 0) {
+
             List<String> phoneNumbers = new ArrayList<String>();
             for (int i = 0; i < membersListLayout.getChildCount(); i++) {
+
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
                 String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                if (!phoneNumbers.contains(member) && !currentMembers.contains(member))
-                    phoneNumbers.add(member);
+                String formatted = PhoneNumberFormatter.formatOne(member, countryISO);
+
+                if (!phoneNumbers.contains(formatted)
+                        && !currentMembers.contains(member)
+                        && formatted != null)
+                    phoneNumbers.add(formatted);
+
             }
+
             for (int j = 0; j < phoneNumbers.size(); j++)
                 params.put("newMembers[" + j + "]", phoneNumbers.get(j));
-            params.put("countryISO", countryISO);
+
         }
 
         // Post to server

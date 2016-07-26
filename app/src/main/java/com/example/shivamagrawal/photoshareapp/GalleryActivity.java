@@ -22,6 +22,7 @@ import android.app.Dialog;
 import android.view.Window;
 import android.widget.TextView;
 import android.view.WindowManager.LayoutParams;
+import android.content.pm.ActivityInfo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,8 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         context = this;
 

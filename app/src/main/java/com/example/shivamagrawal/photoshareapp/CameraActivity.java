@@ -19,6 +19,10 @@ import android.hardware.SensorManager;
 
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import java.io.ByteArrayOutputStream;
 
 import java.util.List;
 import java.util.Map;
@@ -188,7 +192,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 if (data != null)
-                    new UploadPhoto().execute(new UploadPhotoParams(data, currentAngle, currrentCamID, portrait));
+                    uploadImage(new UploadPhotoParams(data, currentAngle, currrentCamID, portrait));
                 mCamera.startPreview();
             }
         });
@@ -204,36 +208,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
             this.cAngle = cAngle;
             this.currentCam = currentCam;
             this.portrait = portrait;
-        }
-    }
-
-    private class UploadPhoto extends AsyncTask<UploadPhotoParams, Void, Boolean> {
-        @Override
-        protected Boolean doInBackground(UploadPhotoParams... params) {
-            // Surround with try/catch
-            try {
-                UploadPhotoParams parameters = params[0];
-                byte[] data = parameters.data;
-                String encodedImage = Base64.encodeToString(data, Base64.DEFAULT);
-                uploadToServer(encodedImage);
-
-                /* Back Camera
-                Portrait: rotate -90
-                Landscape Lefty: rotate 180
-                Landscape Righty: No change
-                 */
-
-                /* Front Camera
-                Portrait: rotate 90
-                Landscape Lefty: rotate 180
-                Landscape Righty: No change
-                 */
-
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-
-            return true;
         }
     }
 
@@ -262,6 +236,37 @@ public class CameraActivity extends AppCompatActivity implements SurfaceHolder.C
                 }
         );
         Server.makeRequest(context, sr);
+    }
+
+    private void uploadImage(final UploadPhotoParams params) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                byte[] data = params.data;
+
+                Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+                int w = scaled.getWidth();
+                int h = scaled.getHeight();
+                Matrix mtx = new Matrix();
+                if (portrait) {
+                    if (params.currentCam == Camera.CameraInfo.CAMERA_FACING_BACK)
+                        mtx.postRotate(90);
+                    else if (params.currentCam == Camera.CameraInfo.CAMERA_FACING_FRONT)
+                        mtx.postRotate(-90);
+                } else {
+                    if (params.cAngle == -90)
+                        mtx.postRotate(180);
+                }
+                bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] imageBytes = baos.toByteArray();
+
+                String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                uploadToServer(encodedImage);
+            }
+        }).start();
     }
 
     private RotateAnimation getRotateAnim(int change) {

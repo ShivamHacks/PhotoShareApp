@@ -17,7 +17,7 @@ public class ContactsAdapter extends ArrayAdapter<Contact> {
 
     public ContactsAdapter(Context context) {
         super(context, android.R.layout.simple_list_item_2, new ArrayList<Contact>());
-        members = GetContacts.get(context);
+        members = ContactsHelper.get(context);
     }
 
     @Override
