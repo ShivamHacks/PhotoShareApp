@@ -3,6 +3,8 @@ package com.example.shivamagrawal.photoshareapp.Objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.regex.Pattern;
+
 public class Group implements Parcelable {
 
     String id;
@@ -31,6 +33,10 @@ public class Group implements Parcelable {
 
     public String toString() {
         return id + "|" + name;
+    }
+    public static Group unString(String s) {
+        String[] split = s.split(Pattern.quote("|"));
+        return new Group(split[0], split[1]);
     }
 
     @Override

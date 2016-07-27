@@ -16,7 +16,11 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.regex.Pattern;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     GroupAdapter groupAdapter;
     ArrayList<Group> groups = new ArrayList<Group>();
     Context context;
+
+    private boolean onCreateRunned = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,10 +107,51 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject group = new JSONObject(groupsJSON.get(i).toString());
                     groups.add(new Group(group.getString("groupID"), group.getString("groupName")));
                 }
+                saveGroupsLocally();
             }
             groupAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
             ResponseHandler.errorToast(context, "An error occured");
+        }
+    }
+
+    private void saveGroupsLocally() {
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        Set<String> stringGroups = new HashSet<String>();
+        for (Group g: groups)
+            stringGroups.add(g.toString());
+        for (String s: stringGroups)
+            Log.d("GROUP", s);
+        editor.putStringSet("groups", stringGroups);
+        editor.commit();
+    }
+
+    private void getSavedGroups() {
+        groups.clear();
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        Set<String> stringGroups = sharedPref.getStringSet("groups", null);
+        if (stringGroups != null && stringGroups.size() != 0) {
+            noGroupsTV.setVisibility(View.GONE);
+            Iterator<String> iterator = stringGroups.iterator();
+            while(iterator.hasNext())
+                groups.add(Group.unString(iterator.next()));
+            groupAdapter.notifyDataSetChanged();
+        } else {
+            noGroupsTV.setText("No Groups. Create one by clicking the plus button");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (onCreateRunned) {
+            getGroups();
+            onCreateRunned = false;
+            Log.d("ONCREATE", "TRUE");
+        } else {
+            getSavedGroups();
+            Log.d("ONRESUME", "TRUE");
         }
     }
 
@@ -128,12 +175,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getGroups();
     }
 
 }
