@@ -35,8 +35,7 @@ public class AccountSettingsActivity extends AppCompatActivity {
                 SharedPreferences sharedPref = context
                         .getSharedPreferences("main", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean("loggedIn", false);
-                editor.remove("token");
+                editor.clear();
                 editor.commit();
                 finish();
             }

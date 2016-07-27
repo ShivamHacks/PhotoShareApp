@@ -18,6 +18,9 @@ import android.widget.ListView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
@@ -205,14 +208,16 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
-                String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                if (member.indexOf("+") == -1)
-                    member = ContactsHelper.internationalize(member);
+                if (!TextUtils.isEmpty(unFormatted)) {
+                    String member = PhoneNumberUtils.normalizeNumber(unFormatted);
+                    if (member.indexOf("+") == -1)
+                        member = ContactsHelper.internationalize(member);
 
-                if (!phoneNumbers.contains(member)
-                        && !currentMembers.contains(member)
-                        && !TextUtils.isEmpty(member))
-                    phoneNumbers.add(member);
+                    if (!phoneNumbers.contains(member)
+                            && !currentMembers.contains(member)
+                            && !TextUtils.isEmpty(member))
+                        phoneNumbers.add(member);
+                }
 
             }
 
@@ -228,7 +233,12 @@ public class GroupSettingsActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String res) {
                         JSONObject body = new ResponseHandler(context, res).parseRes();
-                        if (body != null) finish();
+                        if (body != null) {
+                            Intent returnData = new Intent();
+                            returnData.putExtra("updateGroups", true);
+                            setResult(RESULT_OK, returnData);
+                            finish();
+                        }
                         else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
@@ -240,7 +250,6 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 }
         );
         Server.makeRequest(context, sr);
-
     }
 
     private void leaveGroup() {
@@ -252,7 +261,12 @@ public class GroupSettingsActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String res) {
                         JSONObject body = new ResponseHandler(context, res).parseRes();
-                        if (body != null) finish();
+                        if (body != null) {
+                            Intent returnData = new Intent();
+                            returnData.putExtra("updateGroups", true);
+                            setResult(RESULT_OK, returnData);
+                            finish();
+                        }
                         else ResponseHandler.errorToast(context, "An error occured");
                     }
                 },
@@ -264,6 +278,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 }
         );
         Server.makeRequest(context, sr);
+
     }
 
 }

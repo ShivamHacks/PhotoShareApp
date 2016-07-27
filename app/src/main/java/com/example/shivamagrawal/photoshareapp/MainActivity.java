@@ -5,7 +5,10 @@ import android.os.Bundle;
 
 import android.content.SharedPreferences;
 import android.content.Context;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+import android.content.IntentFilter;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -73,8 +75,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // CURRENT SYSTEM: loads groups every time activity launched/recreated
-    private void getGroups() {
-        groups.clear();
+    private void getGroupsFromServer() {
         Map<String, String> params = new HashMap<String, String>();
         params.put("token", Server.getToken(context));
         StringRequest sr = Server.GET(params, Server.getAllGroupsURL,
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeGroupList(JSONObject body) {
         try {
+            groups.clear();
             JSONArray groupsJSON = body.getJSONArray("groups");
             if (groupsJSON.length() == 0) {
                 noGroupsTV.setText("No Groups. Create one by clicking the plus button");
@@ -118,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
     private void saveGroupsLocally() {
         SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove("groups");
+        editor.commit();
         Set<String> stringGroups = new HashSet<String>();
         for (Group g: groups)
             stringGroups.add(g.toString());
-        for (String s: stringGroups)
-            Log.d("GROUP", s);
         editor.putStringSet("groups", stringGroups);
         editor.commit();
     }
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         if (onCreateRunned) {
-            getGroups();
+            getGroupsFromServer();
             onCreateRunned = false;
             Log.d("ONCREATE", "TRUE");
         } else {
@@ -161,12 +163,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // TODO: handle group changes through broadcast intents
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_main_add:
                 Intent addGroup = new Intent(this, AddGroupActivity.class);
-                startActivity(addGroup);
+                startActivityForResult(addGroup, 1);
                 return true;
             case R.id.action_main_settings:
                 Intent accountSettings = new Intent(this, AccountSettingsActivity.class);
@@ -176,5 +180,16 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                if (data.getBooleanExtra("updateGroups", false))
+                    getGroupsFromServer();
+            }
+        }
+    }
+
 
 }

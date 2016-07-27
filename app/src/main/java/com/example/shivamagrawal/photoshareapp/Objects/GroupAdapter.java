@@ -1,5 +1,6 @@
 package com.example.shivamagrawal.photoshareapp.Objects;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -88,7 +89,7 @@ public class GroupAdapter extends ArrayAdapter<Group> {
                     Intent settings = new Intent(context, GroupSettingsActivity.class);
                     settings.putExtra("groupID", group.getID());
                     settings.putExtra("groupName", group.getName());
-                    context.startActivity(settings);
+                    ((Activity) context).startActivityForResult(settings, 1);
                 }
             });
             // also do button listeners here

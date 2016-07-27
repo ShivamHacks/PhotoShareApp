@@ -11,6 +11,7 @@ import com.android.volley.toolbox.Volley;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -19,7 +20,8 @@ import java.util.Map;
 
 public class Server {
 
-    private static String baseURL = "http://10.0.0.11:3000";
+    //private static String baseURL = "http://10.0.0.11:3000";
+    private static String baseURL = "http://pictureus.herokuapp.com";
     private static String getFullURL(String extension) { return baseURL + extension; }
 
     // Sign Up, LoginActivity, Verify
