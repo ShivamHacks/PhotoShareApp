@@ -15,8 +15,14 @@ import com.example.shivamagrawal.photoshareapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.NumberParseException;
 
 public class ContactsHelper {
+
+    private static PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
 
     public static List<Contact> get(Context context) {
         // http://techblogon.com/read-multiple-phone-numbers-from-android-contacts-list-programmatically/
@@ -70,4 +76,17 @@ public class ContactsHelper {
         memberET.setAdapter(adapter);
         return memberET;
     }
+
+    public static String internationalize(String number) {
+        String phoneNumber = number;
+        String iso = Locale.getDefault().getCountry();
+        try {
+            phoneNumber = phoneUtil.format(phoneUtil.parse(number,
+                    iso.toUpperCase()), PhoneNumberUtil.PhoneNumberFormat.E164);
+        } catch (NumberParseException e) {
+            e.printStackTrace();
+        }
+        return phoneNumber;
+    }
+
 }

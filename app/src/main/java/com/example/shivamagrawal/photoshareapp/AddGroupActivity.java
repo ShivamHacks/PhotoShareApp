@@ -3,17 +3,12 @@ package com.example.shivamagrawal.photoshareapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.view.LayoutInflater;
-import android.widget.TextView;
 import android.content.Context;
 
 import android.telephony.PhoneNumberUtils;
@@ -21,9 +16,7 @@ import android.telephony.PhoneNumberUtils;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
-import com.example.shivamagrawal.photoshareapp.Objects.PhoneNumberFormatter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -48,7 +41,6 @@ public class AddGroupActivity extends AppCompatActivity {
     Button submitButton;
     EditText groupName;
     Context context;
-    String countryISO; // ISO of user
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +68,6 @@ public class AddGroupActivity extends AppCompatActivity {
 
         groupName = (EditText) findViewById(R.id.editText_group_name);
 
-        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        countryISO = tm.getSimCountryIso();
-
     }
 
     private void submit() {
@@ -102,12 +91,13 @@ public class AddGroupActivity extends AppCompatActivity {
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
                 String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                String formatted = PhoneNumberFormatter.formatOne(member, countryISO);
-
-                if (!phoneNumbers.contains(formatted) && formatted != null)
-                    phoneNumbers.add(formatted);
+                if (member.indexOf("+") == -1)
+                    member = ContactsHelper.internationalize(member);
+                if (!phoneNumbers.contains(member) && !TextUtils.isEmpty(member))
+                    phoneNumbers.add(member);
 
             }
+
             for (int j = 0; j < phoneNumbers.size(); j++)
                 params.put("members[" + j + "]", phoneNumbers.get(j));
 

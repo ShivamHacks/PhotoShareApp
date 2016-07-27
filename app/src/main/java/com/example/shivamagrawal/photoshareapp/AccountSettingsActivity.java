@@ -38,6 +38,7 @@ public class AccountSettingsActivity extends AppCompatActivity {
                 editor.putBoolean("loggedIn", false);
                 editor.remove("token");
                 editor.commit();
+                finish();
             }
         });
 

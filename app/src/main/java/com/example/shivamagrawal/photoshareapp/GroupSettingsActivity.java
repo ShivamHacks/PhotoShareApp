@@ -7,11 +7,9 @@ import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -19,14 +17,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.example.shivamagrawal.photoshareapp.Objects.ContactsAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
-import com.example.shivamagrawal.photoshareapp.Objects.PhoneNumberFormatter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -211,12 +206,13 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 EditText memberET = (EditText) membersListLayout.getChildAt(i);
                 String unFormatted = memberET.getText().toString().replaceAll("<.*?>", ""); // remove name
                 String member = PhoneNumberUtils.normalizeNumber(unFormatted);
-                String formatted = PhoneNumberFormatter.formatOne(member, countryISO);
+                if (member.indexOf("+") == -1)
+                    member = ContactsHelper.internationalize(member);
 
-                if (!phoneNumbers.contains(formatted)
+                if (!phoneNumbers.contains(member)
                         && !currentMembers.contains(member)
-                        && formatted != null)
-                    phoneNumbers.add(formatted);
+                        && !TextUtils.isEmpty(member))
+                    phoneNumbers.add(member);
 
             }
 

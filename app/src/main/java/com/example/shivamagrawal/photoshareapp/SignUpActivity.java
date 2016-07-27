@@ -20,6 +20,7 @@ import com.android.volley.toolbox.Volley;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -36,7 +37,6 @@ public class SignUpActivity extends AppCompatActivity {
     Button signUpVerify;
     Context context;
     String userID;
-    String countryISO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +67,6 @@ public class SignUpActivity extends AppCompatActivity {
                 verify();
             }
         });
-
-        TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        countryISO = tm.getSimCountryIso();
-
     }
 
     private boolean check() {
@@ -90,9 +86,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void submit() {
         Map<String, String> params = new HashMap<String, String>();
-        params.put("phoneNumber", phoneNumber.getText().toString());
+        params.put("phoneNumber", ContactsHelper
+                .internationalize(phoneNumber.getText().toString()));
         params.put("password", password1.getText().toString());
-        params.put("countryISO", countryISO);
 
         StringRequest sr = Server.POST(params, Server.signupURL,
                 new Response.Listener<String>() {
@@ -125,10 +121,10 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
 
             Map<String, String> params = new HashMap<String, String>();
-            params.put("phoneNumber", phoneNumber.getText().toString());
+            params.put("phoneNumber", ContactsHelper
+                    .internationalize(phoneNumber.getText().toString()));
             params.put("verificationCode", verificationCode.getText().toString());
             params.put("userID", userID);
-            params.put("countryISO", countryISO);
             params.put("intent", "signup");
 
             StringRequest sr = Server.POST(params, Server.verifyURL,

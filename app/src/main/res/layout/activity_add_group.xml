@@ -45,7 +45,10 @@
 
             <!-- Add Members UI -->
             <LinearLayout style="@style/settings_container">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="* For international numbers, put + in the front" />
                 <LinearLayout
                     android:id="@+id/members_list"
                     android:layout_width="match_parent"
