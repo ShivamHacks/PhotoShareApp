@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.example.shivamagrawal.photoshareapp"
+        applicationId "com.shivamagrawal.photoshareapp"
         minSdkVersion 21
         targetSdkVersion 24
         versionCode 1
