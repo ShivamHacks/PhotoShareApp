@@ -2,8 +2,10 @@ package com.example.shivamagrawal.photoshareapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -26,13 +28,15 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import mehdi.sakout.fancybuttons.FancyButton;
+
 public class LoginActivity extends AppCompatActivity {
 
     EditText phoneNumber;
     EditText password;
     EditText verificationCode;
-    Button loginSubmit;
-    Button loginVerify;
+    FancyButton loginSubmit;
+    FancyButton loginVerify;
     Context context;
     String userID;
 
@@ -47,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.login_password);
         verificationCode = (EditText) findViewById(R.id.login_verification_code);
 
-        loginSubmit = (Button) findViewById(R.id.login_submit);
+        loginSubmit = (FancyButton) findViewById(R.id.login_submit);
         loginSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        loginVerify = (Button) findViewById(R.id.login_verify);
+        loginVerify = (FancyButton) findViewById(R.id.login_verify);
         loginVerify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,6 +75,7 @@ public class LoginActivity extends AppCompatActivity {
         // check if any fields are empty
         if (TextUtils.isEmpty(phoneNumber.getText().toString().trim())
                 || TextUtils.isEmpty(password.getText().toString().trim())) {
+            showErrorDialog("Required fields are empty");
             allGood = false;
         }
         return allGood;
@@ -153,5 +158,14 @@ public class LoginActivity extends AppCompatActivity {
         editor.putBoolean("loggedIn", true);
         editor.commit();
         finish();
+    }
+
+    private void showErrorDialog(String message) {
+        new AlertDialog.Builder(context).setTitle(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).create().show();
     }
 }

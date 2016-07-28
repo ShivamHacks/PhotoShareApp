@@ -147,11 +147,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
         if (onCreateRunned) {
             getGroupsFromServer();
             onCreateRunned = false;
             Log.d("ONCREATE", "TRUE");
         } else {
+            if (!sharedPref.getBoolean("loggedIn", false)) this.recreate();
             getSavedGroups();
             Log.d("ONRESUME", "TRUE");
         }
@@ -174,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_main_settings:
                 Intent accountSettings = new Intent(this, AccountSettingsActivity.class);
-                startActivity(accountSettings);
+                startActivityForResult(accountSettings, 1);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -187,6 +189,14 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 if (data.getBooleanExtra("updateGroups", false))
                     getGroupsFromServer();
+                if (data.getBooleanExtra("logout", false)) {
+                    // Relaunch activity to login
+                    this.recreate();
+                }
+                if (data.getBooleanExtra("deleteAccount", false)) {
+                    // Relaunch activity to login
+                    this.recreate();
+                }
             }
         }
     }

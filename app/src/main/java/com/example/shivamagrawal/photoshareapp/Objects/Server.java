@@ -24,10 +24,11 @@ public class Server {
     private static String baseURL = "http://pictureus.herokuapp.com";
     private static String getFullURL(String extension) { return baseURL + extension; }
 
-    // Sign Up, LoginActivity, Verify
+    // Users
     public static String signupURL = getFullURL("/api/users/signup");
     public static String loginURL = getFullURL("/api/users/login");
     public static String verifyURL = getFullURL("/api/users/verify");
+    public static String deleteAccountURL = getFullURL("/api/users/deleteAccount");
 
     // Groups and events
     public static String createGroupURL = getFullURL("/api/groups/createGroup");
@@ -69,6 +70,8 @@ public class Server {
             }
         };
     }
+
+    // TODO: deal with null response listeners
 
     public static void makeRequest(Context context, StringRequest sr) {
         RequestQueue queue = Volley.newRequestQueue(context);

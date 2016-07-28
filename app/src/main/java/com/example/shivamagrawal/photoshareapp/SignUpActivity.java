@@ -1,6 +1,8 @@
 package com.example.shivamagrawal.photoshareapp;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -13,8 +15,10 @@ import android.telephony.TelephonyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.app.Activity;
+
 import java.util.Map;
 import java.util.HashMap;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.android.volley.toolbox.StringRequest;
@@ -27,14 +31,16 @@ import com.example.shivamagrawal.photoshareapp.Objects.Server;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import mehdi.sakout.fancybuttons.FancyButton;
+
 public class SignUpActivity extends AppCompatActivity {
 
     EditText phoneNumber;
     EditText password1;
     EditText password2;
     EditText verificationCode;
-    Button signUpSubmit;
-    Button signUpVerify;
+    FancyButton signUpSubmit;
+    FancyButton signUpVerify;
     Context context;
     String userID;
 
@@ -50,7 +56,7 @@ public class SignUpActivity extends AppCompatActivity {
         password2 = (EditText) findViewById(R.id.signup_password_2);
         verificationCode = (EditText) findViewById(R.id.signup_verification_code);
 
-        signUpSubmit = (Button) findViewById(R.id.signup_submit);
+        signUpSubmit = (FancyButton) findViewById(R.id.signup_submit);
         signUpSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,7 +66,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
-        signUpVerify = (Button) findViewById(R.id.signup_verify);
+        signUpVerify = (FancyButton) findViewById(R.id.signup_verify);
         signUpVerify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,11 +80,13 @@ public class SignUpActivity extends AppCompatActivity {
         // check if passwords match
         if (!(password1.getText().toString().equals(password2.getText().toString()))) {
             allGood = false;
+            showErrorDialog("Passwords do not match");
         }
         // check if any fields are empty
         if (TextUtils.isEmpty(phoneNumber.getText().toString().trim())
                 || TextUtils.isEmpty(password1.getText().toString().trim())
                 || TextUtils.isEmpty(password2.getText().toString().trim())) {
+            showErrorDialog("Required fields are empty");
             allGood = false;
         }
         return allGood;
@@ -102,7 +110,9 @@ public class SignUpActivity extends AppCompatActivity {
                                 ResponseHandler.errorToast(context, "An error occured");
                                 e.printStackTrace();
                             }
-                        } else { ResponseHandler.errorToast(context, "An error occured"); }
+                        } else {
+                            ResponseHandler.errorToast(context, "An error occured");
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -139,7 +149,9 @@ public class SignUpActivity extends AppCompatActivity {
                                     ResponseHandler.errorToast(context, "An error occured");
                                     e.printStackTrace();
                                 }
-                            } else { ResponseHandler.errorToast(context, "An error occured"); }
+                            } else {
+                                ResponseHandler.errorToast(context, "An error occured");
+                            }
                         }
                     },
                     new Response.ErrorListener() {
@@ -160,6 +172,15 @@ public class SignUpActivity extends AppCompatActivity {
         editor.putBoolean("loggedIn", true);
         editor.commit();
         finish();
+    }
+
+    private void showErrorDialog(String message) {
+        new AlertDialog.Builder(context).setTitle(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).create().show();
     }
 
 }

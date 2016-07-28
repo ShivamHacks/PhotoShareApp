@@ -10,10 +10,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.app.Activity;
 
+import mehdi.sakout.fancybuttons.FancyButton;
+
 public class LoginOrSignUpActivity extends AppCompatActivity {
 
-    Button login;
-    Button signup;
+    FancyButton login;
+    FancyButton signup;
     Context context;
 
     @Override
@@ -22,8 +24,8 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_or_sign_up);
         context = this.getApplicationContext();
 
-        login = (Button) findViewById(R.id.login);
-        signup = (Button) findViewById(R.id.signup);
+        login = (FancyButton) findViewById(R.id.login);
+        signup = (FancyButton) findViewById(R.id.signup);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override

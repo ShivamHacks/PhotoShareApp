@@ -37,14 +37,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mehdi.sakout.fancybuttons.FancyButton;
+
 public class GroupSettingsActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     LinearLayout membersListLayout;
     LayoutInflater inflater;
-    Button addMembersButton;
-    Button leaveGroupButton;
-    Button submitButton;
+    FancyButton addMembersButton;
+    FancyButton leaveGroupButton;
+    FancyButton submitButton;
     EditText groupNameET;
     Context context;
 
@@ -93,7 +95,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
         membersListLayout = (LinearLayout) findViewById(R.id.groupsettings_add_members_list);
         inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        addMembersButton = (Button) findViewById(R.id.groupsettings_addmembers_button);
+        addMembersButton = (FancyButton) findViewById(R.id.groupsettings_addmembers_button);
         addMembersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,7 +114,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
             }
         });
 
-        leaveGroupButton = (Button) findViewById(R.id.editgroup_leave_button);
+        leaveGroupButton = (FancyButton) findViewById(R.id.editgroup_leave_button);
         leaveGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -121,7 +123,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
         });
 
         // Finished Button
-        submitButton = (Button) findViewById(R.id.editgroup_submit_button);
+        submitButton = (FancyButton) findViewById(R.id.editgroup_submit_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -159,6 +161,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
     }
 
     private void fillExistingMembersList(JSONObject body) {
+        // TODO: show name if contact exists with number
         try {
             JSONArray membersJSON = body.getJSONArray("members");
             for (int i = 0; i < membersJSON.length(); i++)

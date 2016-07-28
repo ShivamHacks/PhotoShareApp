@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import mehdi.sakout.fancybuttons.FancyButton;
+
 public class AddGroupActivity extends AppCompatActivity {
 
     // Use this to add group and edit group
@@ -40,7 +42,7 @@ public class AddGroupActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout membersListLayout;
     LayoutInflater inflater;
-    Button submitButton;
+    FancyButton submitButton;
     EditText groupName;
     Context context;
 
@@ -60,7 +62,7 @@ public class AddGroupActivity extends AppCompatActivity {
         inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         membersListLayout.addView(ContactsHelper.createACTV(context, inflater, membersListLayout)); // create First ACTV
 
-        submitButton = (Button) findViewById(R.id.submit_new_group_button);
+        submitButton = (FancyButton) findViewById(R.id.submit_new_group_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
