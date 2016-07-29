@@ -6,7 +6,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.telephony.PhoneNumberUtils;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Button;
 import android.text.TextUtils;
@@ -25,6 +27,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
+import com.example.shivamagrawal.photoshareapp.Objects.CountriesAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -36,6 +39,7 @@ import mehdi.sakout.fancybuttons.FancyButton;
 public class SignUpActivity extends AppCompatActivity {
 
     EditText phoneNumber;
+    AutoCompleteTextView countryCode;
     EditText password1;
     EditText password2;
     EditText verificationCode;
@@ -43,6 +47,7 @@ public class SignUpActivity extends AppCompatActivity {
     FancyButton signUpVerify;
     Context context;
     String userID;
+    String internationalNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,10 @@ public class SignUpActivity extends AppCompatActivity {
         context = this;
 
         phoneNumber = (EditText) findViewById(R.id.signup_phone_number);
+
+        countryCode = (AutoCompleteTextView) findViewById(R.id.signup_countryACTV);
+        countryCode.setAdapter(new CountriesAdapter(context));
+
         password1 = (EditText) findViewById(R.id.signup_password_1);
         password2 = (EditText) findViewById(R.id.signup_password_2);
         verificationCode = (EditText) findViewById(R.id.signup_verification_code);
@@ -84,6 +93,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
         // check if any fields are empty
         if (TextUtils.isEmpty(phoneNumber.getText().toString().trim())
+                || TextUtils.isEmpty(countryCode.getText().toString().trim())
                 || TextUtils.isEmpty(password1.getText().toString().trim())
                 || TextUtils.isEmpty(password2.getText().toString().trim())) {
             showErrorDialog("Required fields are empty");
@@ -94,14 +104,20 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void submit() {
         Map<String, String> params = new HashMap<String, String>();
-        params.put("phoneNumber", ContactsHelper
-                .internationalize(phoneNumber.getText().toString()));
+
+        internationalNumber = countryCode.getText().toString() +
+                PhoneNumberUtils.normalizeNumber(phoneNumber.getText().toString());
+
+        Log.d("NUM", internationalNumber);
+
+        params.put("phoneNumber", internationalNumber);
         params.put("password", password1.getText().toString());
 
         StringRequest sr = Server.POST(params, Server.signupURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String res) {
+                        Log.d("RES", res);
                         JSONObject body = new ResponseHandler(context, res).parseRes();
                         if (body != null) {
                             try {
@@ -123,16 +139,21 @@ public class SignUpActivity extends AppCompatActivity {
                 }
         );
         Server.makeRequest(context, sr);
+
+        SharedPreferences sharedPref =
+                context.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("countryCode", countryCode.getText().toString());
+        editor.commit();
     }
 
     private void verify() {
         if (TextUtils.isEmpty(verificationCode.getText().toString().trim()) || userID.equals("")) {
-            ResponseHandler.errorToast(context, "An error occured");
+            ResponseHandler.errorToast(context, "An error occurred");
         } else {
 
             Map<String, String> params = new HashMap<String, String>();
-            params.put("phoneNumber", ContactsHelper
-                    .internationalize(phoneNumber.getText().toString()));
+            params.put("phoneNumber", internationalNumber);
             params.put("verificationCode", verificationCode.getText().toString());
             params.put("userID", userID);
             params.put("intent", "signup");

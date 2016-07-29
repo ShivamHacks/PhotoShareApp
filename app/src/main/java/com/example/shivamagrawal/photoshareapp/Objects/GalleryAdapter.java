@@ -19,14 +19,14 @@ import android.util.Log;
 public class GalleryAdapter extends BaseAdapter {
 
     private Context context;
-    private List<String> photoURLs;
+    private List<Photo> photos;
 
     int width;
     int height;
 
-    public GalleryAdapter(Context context, List<String> photoURLs) {
+    public GalleryAdapter(Context context, List<Photo> photos) {
         this.context = context;
-        this.photoURLs = photoURLs;
+        this.photos = photos;
 
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -37,7 +37,7 @@ public class GalleryAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return photoURLs.size();
+        return photos.size();
     }
 
     public Object getItem(int position) {
@@ -59,8 +59,7 @@ public class GalleryAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
-        Log.d("LOADING", photoURLs.get(position));
-        Glide.with(context).load(photoURLs.get(position)).centerCrop().into(imageView);
+        Glide.with(context).load(photos.get(position).getUrl()).centerCrop().into(imageView);
         return imageView;
     }
 

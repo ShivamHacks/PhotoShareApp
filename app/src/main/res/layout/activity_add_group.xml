@@ -19,10 +19,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentStart="true"
             android:orientation="vertical">
 
             <!-- Change Group Name -->
@@ -32,10 +28,6 @@
                     android:id="@+id/editText_group_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentStart="true"
                     android:hint="Group Name"
                     android:inputType="textCapSentences|textAutoCorrect"
                     android:maxLines="1">
@@ -61,23 +53,7 @@
             <LinearLayout style="@style/settings_container">
 
                 <mehdi.sakout.fancybuttons.FancyButton
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:paddingTop="10dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    fancy:fb_defaultColor="#F44336"
-                    fancy:fb_focusColor="#D32F2F"
-                    fancy:fb_textColor="#FFFFFF"
-                    fancy:fb_textSize="20dp"
-                    fancy:fb_radius="5dp"
-                    fancy:fb_fontIconSize="20dp"
-                    fancy:fb_iconPaddingRight="10dp"
-                    fancy:fb_iconPosition="left"
-
+                    style="@style/fancy_button"
                     fancy:fb_text="Done"
                     android:id="@+id/submit_new_group_button" />
             </LinearLayout>

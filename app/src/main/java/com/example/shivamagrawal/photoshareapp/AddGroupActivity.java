@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import android.util.Log;
+
 import mehdi.sakout.fancybuttons.FancyButton;
 
 public class AddGroupActivity extends AppCompatActivity {
@@ -54,6 +56,7 @@ public class AddGroupActivity extends AppCompatActivity {
         context = this;
 
         toolbar = (Toolbar) findViewById(R.id.add_group_activity_tool_bar);
+        toolbar.setTitle("Add Group");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -76,8 +79,6 @@ public class AddGroupActivity extends AppCompatActivity {
 
     private void submit() {
 
-        // Currently, all group members must be in same country
-
         // Define params
         Map<String, String> params = new HashMap<String, String>();
 
@@ -97,7 +98,7 @@ public class AddGroupActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(unFormatted)) {
                     String member = PhoneNumberUtils.normalizeNumber(unFormatted);
                     if (member.indexOf("+") == -1)
-                        member = ContactsHelper.internationalize(member);
+                        member = ContactsHelper.internationalize(context, member);
                     if (!phoneNumbers.contains(member) && !TextUtils.isEmpty(member))
                         phoneNumbers.add(member);
                 }
@@ -115,6 +116,7 @@ public class AddGroupActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String res) {
+                        Log.d("RES", res);
                         JSONObject body = new ResponseHandler(context, res).parseRes();
                         if (body != null) {
                             Intent returnData = new Intent();

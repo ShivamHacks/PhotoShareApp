@@ -20,8 +20,8 @@ import java.util.Map;
 
 public class Server {
 
-    //private static String baseURL = "http://10.0.0.11:3000";
-    private static String baseURL = "http://pictureus.herokuapp.com";
+    private static String baseURL = "http://10.0.0.11:3000";
+    //private static String baseURL = "http://pictureus.herokuapp.com";
     private static String getFullURL(String extension) { return baseURL + extension; }
 
     // Users

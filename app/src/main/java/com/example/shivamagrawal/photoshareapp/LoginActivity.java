@@ -8,9 +8,11 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
+import com.example.shivamagrawal.photoshareapp.Objects.CountriesAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
 
@@ -33,12 +36,14 @@ import mehdi.sakout.fancybuttons.FancyButton;
 public class LoginActivity extends AppCompatActivity {
 
     EditText phoneNumber;
+    AutoCompleteTextView countryCode;
     EditText password;
     EditText verificationCode;
     FancyButton loginSubmit;
     FancyButton loginVerify;
     Context context;
     String userID;
+    String internationalNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,10 @@ public class LoginActivity extends AppCompatActivity {
         context = this;
 
         phoneNumber = (EditText) findViewById(R.id.login_phone_number);
+
+        countryCode = (AutoCompleteTextView) findViewById(R.id.login_countryACTV);
+        countryCode.setAdapter(new CountriesAdapter(context));
+
         password = (EditText) findViewById(R.id.login_password);
         verificationCode = (EditText) findViewById(R.id.login_verification_code);
 
@@ -74,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
         boolean allGood = true;
         // check if any fields are empty
         if (TextUtils.isEmpty(phoneNumber.getText().toString().trim())
+                || TextUtils.isEmpty(countryCode.getText().toString().trim())
                 || TextUtils.isEmpty(password.getText().toString().trim())) {
             showErrorDialog("Required fields are empty");
             allGood = false;
@@ -83,8 +93,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private void submit() {
         Map<String, String> params = new HashMap<String, String>();
-        params.put("phoneNumber", ContactsHelper
-                .internationalize(phoneNumber.getText().toString()));
+
+        internationalNumber = countryCode.getText().toString() +
+                PhoneNumberUtils.normalizeNumber(phoneNumber.getText().toString());
+
+        params.put("phoneNumber", internationalNumber);
         params.put("password", password.getText().toString());
 
         StringRequest sr = Server.POST(params, Server.loginURL,
@@ -110,6 +123,12 @@ public class LoginActivity extends AppCompatActivity {
                 }
         );
         Server.makeRequest(context, sr);
+
+        SharedPreferences sharedPref =
+                context.getSharedPreferences("main", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("countryCode", countryCode.getText().toString());
+        editor.commit();
     }
 
     private void verify() {
@@ -118,8 +137,7 @@ public class LoginActivity extends AppCompatActivity {
         } else {
 
             Map<String, String> params = new HashMap<String, String>();
-            params.put("phoneNumber", ContactsHelper
-                    .internationalize(phoneNumber.getText().toString()));
+            params.put("phoneNumber", internationalNumber);
             params.put("verificationCode", verificationCode.getText().toString());
             params.put("userID", userID);
             params.put("intent", "login");

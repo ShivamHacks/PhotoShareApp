@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.ImageView;
 import java.util.List;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.shivamagrawal.photoshareapp.R;
@@ -18,17 +19,17 @@ public class PhotoAdapter extends PagerAdapter {
 
     Context context;
     LayoutInflater inflater;
-    List<String> photoURLS;
+    List<Photo> photos;
 
-    public PhotoAdapter(Context context, List<String> photoURLS) {
+    public PhotoAdapter(Context context, List<Photo> photos) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.photoURLS = photoURLS;
+        this.photos = photos;
     }
 
     @Override
     public int getCount() {
-        return photoURLS.size();
+        return photos.size();
     }
 
     @Override
@@ -40,8 +41,16 @@ public class PhotoAdapter extends PagerAdapter {
     public RelativeLayout instantiateItem(ViewGroup container, int position) {
         RelativeLayout photoView = (RelativeLayout) inflater
                 .inflate(R.layout.photo_view, container, false);
+
+        Photo photo = photos.get(position);
+
         ImageView imageView = (ImageView) photoView.findViewById(R.id.photo_imageview);
-        Glide.with(context).load(photoURLS.get(position)).fitCenter().into(imageView);
+        Glide.with(context).load(photo.getUrl()).fitCenter().into(imageView);
+
+        TextView capturedBy = (TextView) photoView.findViewById(R.id.photo_capturedBy);
+        capturedBy.setText(photo.getCapturedBy() + " on "
+                + photo.getCapturedAt());
+
         container.addView(photoView);
         return photoView;
     }

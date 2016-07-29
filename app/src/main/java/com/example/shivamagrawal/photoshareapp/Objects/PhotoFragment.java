@@ -25,10 +25,10 @@ public class PhotoFragment extends DialogFragment {
         ViewPager slideShow = (ViewPager) view.findViewById(R.id.photo_view_pager);
         ImageButton backButton = (ImageButton) view.findViewById(R.id.finish_photo_pager);
 
-        ArrayList<String> photoURLs = getArguments().getStringArrayList("photoURLs");
+        ArrayList<Photo> photos = getArguments().getParcelableArrayList("photos");
         int currentPosition = getArguments().getInt("position");
 
-        PhotoAdapter adapter = new PhotoAdapter(getActivity(), photoURLs);
+        PhotoAdapter adapter = new PhotoAdapter(getActivity(), photos);
         slideShow.setAdapter(adapter);
         slideShow.setCurrentItem(currentPosition);
 

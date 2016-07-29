@@ -20,10 +20,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentStart="true"
             android:orientation="vertical">
 
             <LinearLayout style="@style/settings_container">
@@ -32,8 +28,6 @@
                     android:id="@+id/group_name_edittext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
                     android:hint="Group Name" />
             </LinearLayout>
 
@@ -42,26 +36,9 @@
                 <ListView
                     android:id="@+id/editgroup_existing_members_listview"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_height="wrap_content"/>
                 <mehdi.sakout.fancybuttons.FancyButton
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:paddingTop="10dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    fancy:fb_defaultColor="#F44336"
-                    fancy:fb_focusColor="#D32F2F"
-                    fancy:fb_textColor="#FFFFFF"
-                    fancy:fb_textSize="20dp"
-                    fancy:fb_radius="5dp"
-                    fancy:fb_fontIconSize="20dp"
-                    fancy:fb_iconPaddingRight="10dp"
-                    fancy:fb_iconPosition="left"
-
+                    style="@style/fancy_button"
                     android:id="@+id/groupsettings_addmembers_button"
                     fancy:fb_text="Add Members" />
                 <TextView
@@ -80,43 +57,11 @@
 
             <LinearLayout style="@style/settings_container">
                 <mehdi.sakout.fancybuttons.FancyButton
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:paddingTop="10dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    fancy:fb_defaultColor="#F44336"
-                    fancy:fb_focusColor="#D32F2F"
-                    fancy:fb_textColor="#FFFFFF"
-                    fancy:fb_textSize="20dp"
-                    fancy:fb_radius="5dp"
-                    fancy:fb_fontIconSize="20dp"
-                    fancy:fb_iconPaddingRight="10dp"
-                    fancy:fb_iconPosition="left"
-
+                    style="@style/fancy_button"
                     android:id="@+id/editgroup_leave_button"
                     fancy:fb_text="Leave Group" />
                 <mehdi.sakout.fancybuttons.FancyButton
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:paddingTop="10dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    fancy:fb_defaultColor="#F44336"
-                    fancy:fb_focusColor="#D32F2F"
-                    fancy:fb_textColor="#FFFFFF"
-                    fancy:fb_textSize="20dp"
-                    fancy:fb_radius="5dp"
-                    fancy:fb_fontIconSize="20dp"
-                    fancy:fb_iconPaddingRight="10dp"
-                    fancy:fb_iconPosition="left"
-
+                    style="@style/fancy_button"
                     android:id="@+id/editgroup_submit_button"
                     fancy:fb_text="Done" />
             </LinearLayout>

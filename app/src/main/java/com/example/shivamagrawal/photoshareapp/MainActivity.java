@@ -36,6 +36,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.telephony.SmsManager;
+
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
@@ -52,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+
+        //byte[] smsBody = "Let me know if you get this SMS".getBytes();
+        //short port = 6734;
+        //smsManager.sendDataMessage(phoneNumber, null, port, smsBody, null, null);
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);

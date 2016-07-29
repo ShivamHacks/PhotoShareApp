@@ -1,6 +1,8 @@
 package com.example.shivamagrawal.photoshareapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +26,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
@@ -52,12 +55,11 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
     String groupName;
 
-    List<String> currentMembers = new ArrayList<String>(); // current members
+    List<String> currentMembers = new ArrayList<String>();
     ListView existingMembers;
     ArrayAdapter<String> membersAdapter;
 
     String groupID;
-    String countryISO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +120,14 @@ public class GroupSettingsActivity extends AppCompatActivity {
         leaveGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                leaveGroup();
+                new AlertDialog.Builder(context).setTitle("Leave Group?")
+                        .setPositiveButton(android.R.string.yes,
+                                new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                leaveGroup();
+                            }
+                        }).setNegativeButton(android.R.string.no, null).create().show();
             }
         });
 
@@ -131,10 +140,6 @@ public class GroupSettingsActivity extends AppCompatActivity {
             }
         });
 
-        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        countryISO = tm.getSimCountryIso();
-
-        //init();
     }
 
     private void getGroupData() {
@@ -161,11 +166,20 @@ public class GroupSettingsActivity extends AppCompatActivity {
     }
 
     private void fillExistingMembersList(JSONObject body) {
-        // TODO: show name if contact exists with number
         try {
             JSONArray membersJSON = body.getJSONArray("members");
-            for (int i = 0; i < membersJSON.length(); i++)
+            List<Contact> contacts = ContactsHelper.get(context);
+            mainloop: for (int i = 0; i < membersJSON.length(); i++) {
+                for (Contact c: contacts) {
+                    if (membersJSON.get(i).equals(c.getNumber())
+                            || membersJSON.get(i).equals(ContactsHelper
+                            .internationalize(context, c.getNumber()))) {
+                        currentMembers.add(c.getName());
+                        continue mainloop;
+                    }
+                }
                 currentMembers.add(membersJSON.getString(i));
+            }
             membersAdapter.notifyDataSetChanged();
             justifyListViewHeightBasedOnChildren(existingMembers);
         } catch(JSONException e) {
@@ -176,10 +190,8 @@ public class GroupSettingsActivity extends AppCompatActivity {
     private void justifyListViewHeightBasedOnChildren (ListView listView) {
         // http://stackoverflow.com/questions/12212890/disable-listview-scrolling
         ListAdapter adapter = listView.getAdapter();
+        if (adapter == null) return;
 
-        if (adapter == null) {
-            return;
-        }
         ViewGroup vg = listView;
         int totalHeight = 0;
         for (int i = 0; i < adapter.getCount(); i++) {
@@ -214,7 +226,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(unFormatted)) {
                     String member = PhoneNumberUtils.normalizeNumber(unFormatted);
                     if (member.indexOf("+") == -1)
-                        member = ContactsHelper.internationalize(member);
+                        member = ContactsHelper.internationalize(context, member);
 
                     if (!phoneNumbers.contains(member)
                             && !currentMembers.contains(member)

@@ -33,11 +33,15 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
 import com.example.shivamagrawal.photoshareapp.Objects.GalleryAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.Group;
+import com.example.shivamagrawal.photoshareapp.Objects.Photo;
 import com.example.shivamagrawal.photoshareapp.Objects.PhotoAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.PhotoFragment;
+import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
+import com.example.shivamagrawal.photoshareapp.Objects.Contact;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,7 +56,7 @@ public class GalleryActivity extends AppCompatActivity {
     TextView noImagesTV;
 
     GalleryAdapter galleryAdapter;
-    ArrayList<String> urls = new ArrayList<String>();
+    ArrayList<Photo> photos = new ArrayList<Photo>();
     boolean loadingURLS = true;
 
     @Override
@@ -74,7 +78,7 @@ public class GalleryActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(extras.getString("groupName"));
 
         GridView gridview = (GridView) findViewById(R.id.photo_gridview);
-        galleryAdapter = new GalleryAdapter(this, urls);
+        galleryAdapter = new GalleryAdapter(this, photos);
         gridview.setAdapter(galleryAdapter);
 
         inflater = (LayoutInflater) getApplicationContext()
@@ -94,7 +98,8 @@ public class GalleryActivity extends AppCompatActivity {
 
     private void showFragment(int position) {
         Bundle bundle = new Bundle();
-        bundle.putStringArrayList("photoURLs", urls);
+        //bundle.putStringArrayList("photos", photos);
+        bundle.putParcelableArrayList("photos", photos);
         bundle.putInt("position", position);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -112,31 +117,33 @@ public class GalleryActivity extends AppCompatActivity {
         StringRequest sr = Server.GET(params, Server.getAllPhotosURL,
                 new Response.Listener<String>() {
                     @Override
-                    public void onResponse(String s) {
+                    public void onResponse(String res) {
                         try {
-                            JSONObject results = new JSONObject(s);
-                            Log.d("RES", s);
-                            JSONArray urlsJSON = results.getJSONArray("photoURLS");
-                            if (urlsJSON.length() == 0) {
-                                noImagesTV.setText("No Images in this group yet");
-                            } else {
-                                noImagesTV.setVisibility(View.GONE);
-                                for (int i = 0; i < urlsJSON.length(); i++) {
-                                    Log.d("URL", urlsJSON.get(i).toString());
-                                    urls.add(urlsJSON.get(i).toString());
+                            JSONObject body = new ResponseHandler(context, res).parseRes();
+                            if (body != null) {
+                                JSONArray photosJSON = body.getJSONArray("photos");
+                                if (photosJSON.length() == 0) {
+                                    noImagesTV.setText("No Images in this group yet");
+                                } else {
+                                    noImagesTV.setVisibility(View.GONE);
+                                    List<Contact> contacts = ContactsHelper.get(context);
+                                    for (int i = 0; i < photosJSON.length(); i++) {
+                                        photos.add(new Photo((JSONObject) photosJSON.get(i),
+                                                context, contacts));
+                                    }
+                                    galleryAdapter.notifyDataSetChanged();
+                                    loadingURLS = false;
                                 }
-                                galleryAdapter.notifyDataSetChanged();
-                                loadingURLS = false;
                             }
                         } catch(JSONException e) {
-                            e.printStackTrace();
+                            ResponseHandler.errorToast(context, "An error occured");
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("ERR", "ERR");
+                        ResponseHandler.errorToast(context, "An error occured");
                     }
                 }
         );

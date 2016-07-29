@@ -1,6 +1,7 @@
 package com.example.shivamagrawal.photoshareapp.Objects;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
@@ -27,18 +28,30 @@ public class ContactsHelper {
     public static List<Contact> get(Context context) {
         // http://techblogon.com/read-multiple-phone-numbers-from-android-contacts-list-programmatically/
         List<Contact> contacts = new ArrayList<Contact>();
-        Cursor cursor = context.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        Cursor cursor = context
+                .getContentResolver()
+                .query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         Integer contactsCount = cursor.getCount();
         if (contactsCount > 0) {
             while (cursor.moveToNext()) {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-                String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                    Cursor pCursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                String id = cursor
+                        .getString(cursor.getColumnIndex(
+                                ContactsContract.Contacts._ID));
+                String contactName = cursor
+                        .getString(cursor.getColumnIndex(
+                                ContactsContract.Contacts.DISPLAY_NAME));
+                if (Integer.parseInt(cursor
+                        .getString(cursor.getColumnIndex(
+                                ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                    Cursor pCursor = context
+                            .getContentResolver()
+                            .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                             ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
                             new String[]{id}, null);
                     while (pCursor.moveToNext()) {
-                        String phoneNo = pCursor.getString(pCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        String phoneNo = pCursor
+                                .getString(pCursor.getColumnIndex(
+                                        ContactsContract.CommonDataKinds.Phone.NUMBER));
                         contacts.add(new Contact(contactName, phoneNo));
                     }
                     pCursor.close();
@@ -50,7 +63,8 @@ public class ContactsHelper {
     }
 
     public static AutoCompleteTextView createACTV(
-            final Context context, final LayoutInflater inflater, final LinearLayout membersListLayout) {
+            final Context context, final LayoutInflater inflater,
+            final LinearLayout membersListLayout) {
         AutoCompleteTextView memberET = (AutoCompleteTextView)
                 inflater.inflate(R.layout.add_member_edittext, null);
         memberET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -58,12 +72,14 @@ public class ContactsHelper {
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    AutoCompleteTextView lastACTV = (AutoCompleteTextView) membersListLayout
+                    AutoCompleteTextView lastACTV =
+                            (AutoCompleteTextView) membersListLayout
                             .getChildAt(membersListLayout.getChildCount() - 1);
                     if (TextUtils.isEmpty(lastACTV.getText().toString().trim()))
                         lastACTV.requestFocus();
                     else {
-                        AutoCompleteTextView newACTV = createACTV(context, inflater, membersListLayout);
+                        AutoCompleteTextView newACTV =
+                                createACTV(context, inflater, membersListLayout);
                         newACTV.requestFocus();
                         membersListLayout.addView(newACTV);
                     }
@@ -77,16 +93,10 @@ public class ContactsHelper {
         return memberET;
     }
 
-    public static String internationalize(String number) {
-        String phoneNumber = number;
-        String iso = Locale.getDefault().getCountry();
-        try {
-            phoneNumber = phoneUtil.format(phoneUtil.parse(number,
-                    iso.toUpperCase()), PhoneNumberUtil.PhoneNumberFormat.E164);
-        } catch (NumberParseException e) {
-            e.printStackTrace();
-        }
-        return phoneNumber;
+    public static String internationalize(Context context, String number) {
+        SharedPreferences sharedPref =
+                context.getSharedPreferences("main", Context.MODE_PRIVATE);
+        return sharedPref.getString("countryCode", "") + number;
     }
 
 }

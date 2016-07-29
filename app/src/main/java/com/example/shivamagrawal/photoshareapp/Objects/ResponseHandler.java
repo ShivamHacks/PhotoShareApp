@@ -25,6 +25,7 @@ public class ResponseHandler {
                 errorToast(context, results.getString("message"));
                 return null;
             } else {
+                errorToast(context, "An error occured");
                 return null;
             }
         } catch (JSONException e) {

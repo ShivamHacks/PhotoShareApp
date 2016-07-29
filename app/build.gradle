@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.shivamagrawal.photoshareapp"
+        applicationId "com.shivamagrawal.photoshareapp" // this can't have com.example in it.
         minSdkVersion 21
         targetSdkVersion 24
         versionCode 1
