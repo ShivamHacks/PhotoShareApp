@@ -1,7 +1,6 @@
 package com.example.shivamagrawal.photoshareapp;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -22,14 +21,12 @@ import android.os.Bundle;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.Rect;
 
 import java.io.ByteArrayOutputStream;
 
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
 
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;

@@ -1,27 +1,17 @@
 package com.example.shivamagrawal.photoshareapp;
 
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.view.View;
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.widget.ImageView;
-import android.app.Dialog;
-import android.view.Window;
 import android.widget.TextView;
-import android.view.WindowManager.LayoutParams;
 import android.content.pm.ActivityInfo;
 
 import java.util.HashMap;
@@ -32,12 +22,9 @@ import java.util.Map;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.bumptech.glide.Glide;
 import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
 import com.example.shivamagrawal.photoshareapp.Objects.GalleryAdapter;
-import com.example.shivamagrawal.photoshareapp.Objects.Group;
 import com.example.shivamagrawal.photoshareapp.Objects.Photo;
-import com.example.shivamagrawal.photoshareapp.Objects.PhotoAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.PhotoFragment;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;

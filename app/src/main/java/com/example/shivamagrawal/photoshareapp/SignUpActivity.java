@@ -10,23 +10,16 @@ import android.telephony.PhoneNumberUtils;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.Button;
 import android.text.TextUtils;
 import android.util.Log;
-import android.telephony.TelephonyManager;
 import android.content.Context;
-import android.content.Intent;
-import android.app.Activity;
 
 import java.util.Map;
 import java.util.HashMap;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.example.shivamagrawal.photoshareapp.Objects.ContactsHelper;
 import com.example.shivamagrawal.photoshareapp.Objects.CountriesAdapter;
 import com.example.shivamagrawal.photoshareapp.Objects.ResponseHandler;
 import com.example.shivamagrawal.photoshareapp.Objects.Server;
@@ -49,12 +42,18 @@ public class SignUpActivity extends AppCompatActivity {
     String userID;
     String internationalNumber;
 
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
         context = this;
+
+        sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
 
         phoneNumber = (EditText) findViewById(R.id.signup_phone_number);
 
@@ -140,9 +139,6 @@ public class SignUpActivity extends AppCompatActivity {
         );
         Server.makeRequest(context, sr);
 
-        SharedPreferences sharedPref =
-                context.getSharedPreferences("main", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("countryCode", countryCode.getText().toString());
         editor.commit();
     }
@@ -156,7 +152,6 @@ public class SignUpActivity extends AppCompatActivity {
             params.put("phoneNumber", internationalNumber);
             params.put("verificationCode", verificationCode.getText().toString());
             params.put("userID", userID);
-            params.put("intent", "signup");
 
             StringRequest sr = Server.POST(params, Server.verifyURL,
                     new Response.Listener<String>() {
@@ -187,11 +182,10 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void saveToken(String token) {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("token", token);
         editor.putBoolean("loggedIn", true);
         editor.commit();
+
         finish();
     }
 

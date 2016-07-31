@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.content.IntentFilter;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -36,8 +35,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.telephony.SmsManager;
-
 public class MainActivity extends AppCompatActivity {
 
     Toolbar toolbar;
@@ -47,6 +44,15 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Group> groups = new ArrayList<Group>();
     Context context;
 
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
+
+    BroadcastReceiver updateGroups = null;
+    boolean recieverRegistered = false;
+    public static String updateGroupsFilterString = "com.shivamagrawal.pictureus";
+    IntentFilter updateGroupsFilter =
+            new IntentFilter(updateGroupsFilterString);
+
     private boolean onCreateRunned = true;
 
     @Override
@@ -55,9 +61,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = this;
 
-        //byte[] smsBody = "Let me know if you get this SMS".getBytes();
-        //short port = 6734;
-        //smsManager.sendDataMessage(phoneNumber, null, port, smsBody, null, null);
+        sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+
+        updateGroups = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d("UPDATE GROUPS", "RECIEVED");
+                if (intent != null) getGroupsFromServer();
+            }
+        };
 
         toolbar = (Toolbar) findViewById(R.id.main_activity_tool_bar);
         setSupportActionBar(toolbar);
@@ -68,19 +81,8 @@ public class MainActivity extends AppCompatActivity {
 
         noGroupsTV = (TextView) findViewById(R.id.nogroup_textview);
 
-        init();
     }
 
-    private void init() {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        boolean loggedIn = sharedPref.getBoolean("loggedIn", false);
-        if (!loggedIn) {
-            Intent loginOrSignUp = new Intent(this, LoginOrSignUpActivity.class);
-            startActivity(loginOrSignUp);
-        }
-    }
-
-    // CURRENT SYSTEM: loads groups every time activity launched/recreated
     private void getGroupsFromServer() {
         Map<String, String> params = new HashMap<String, String>();
         params.put("token", Server.getToken(context));
@@ -124,8 +126,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveGroupsLocally() {
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
         editor.remove("groups");
         editor.commit();
         Set<String> stringGroups = new HashSet<String>();
@@ -137,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void getSavedGroups() {
         groups.clear();
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
         Set<String> stringGroups = sharedPref.getStringSet("groups", null);
         if (stringGroups != null && stringGroups.size() != 0) {
             noGroupsTV.setVisibility(View.GONE);
@@ -153,15 +152,32 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sharedPref = this.getSharedPreferences("main", Context.MODE_PRIVATE);
-        if (onCreateRunned) {
-            getGroupsFromServer();
-            onCreateRunned = false;
-            Log.d("ONCREATE", "TRUE");
+
+        if (!recieverRegistered) {
+            registerReceiver(updateGroups, updateGroupsFilter);
+            recieverRegistered = true;
+        }
+
+        boolean loggedIn = sharedPref.getBoolean("loggedIn", false);
+        if (loggedIn) {
+            if (onCreateRunned) {
+                sendBroadcast(new Intent(updateGroupsFilterString));
+            } else {
+                getSavedGroups();
+            }
         } else {
-            if (!sharedPref.getBoolean("loggedIn", false)) this.recreate();
-            getSavedGroups();
-            Log.d("ONRESUME", "TRUE");
+            Intent loginOrSignUp = new Intent(this, LoginOrSignUpActivity.class);
+            startActivity(loginOrSignUp);
+        }
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (recieverRegistered) {
+            unregisterReceiver(updateGroups);
+            recieverRegistered = false;
         }
     }
 
@@ -171,41 +187,23 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    // TODO: handle group changes through broadcast intents
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_main_refresh:
+                sendBroadcast(new Intent(updateGroupsFilterString));
+                return true;
             case R.id.action_main_add:
                 Intent addGroup = new Intent(this, AddGroupActivity.class);
-                startActivityForResult(addGroup, 1);
+                startActivity(addGroup);
                 return true;
             case R.id.action_main_settings:
                 Intent accountSettings = new Intent(this, AccountSettingsActivity.class);
-                startActivityForResult(accountSettings, 1);
+                startActivity(accountSettings);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                if (data.getBooleanExtra("updateGroups", false))
-                    getGroupsFromServer();
-                if (data.getBooleanExtra("logout", false)) {
-                    // Relaunch activity to login
-                    this.recreate();
-                }
-                if (data.getBooleanExtra("deleteAccount", false)) {
-                    // Relaunch activity to login
-                    this.recreate();
-                }
-            }
-        }
-    }
-
 
 }

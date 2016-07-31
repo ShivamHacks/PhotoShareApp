@@ -1,13 +1,11 @@
 package com.example.shivamagrawal.photoshareapp;
 
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.view.LayoutInflater;
@@ -34,12 +32,6 @@ import android.util.Log;
 import mehdi.sakout.fancybuttons.FancyButton;
 
 public class AddGroupActivity extends AppCompatActivity {
-
-    // Use this to add group and edit group
-    // So just return group data and use this activity to start it for result
-    // NOt doing multicompeltetextview b/c want it to be easier to edit numbers
-    // TODO: display name? And then allow for only numbers?? Need to make it more dynamic.
-    // FORNOW: Sticking to numbers only
 
     Toolbar toolbar;
     LinearLayout membersListLayout;
@@ -119,9 +111,7 @@ public class AddGroupActivity extends AppCompatActivity {
                         Log.d("RES", res);
                         JSONObject body = new ResponseHandler(context, res).parseRes();
                         if (body != null) {
-                            Intent returnData = new Intent();
-                            returnData.putExtra("updateGroups", true);
-                            setResult(RESULT_OK, returnData);
+                            sendBroadcast(new Intent(MainActivity.updateGroupsFilterString));
                             finish();
                         }
                         else ResponseHandler.errorToast(context, "An error occured");

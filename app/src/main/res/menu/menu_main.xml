@@ -5,8 +5,16 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/action_main_add"
+        android:id="@+id/action_main_refresh"
         android:orderInCategory="100"
+        android:title="Refresh Groups"
+        android:icon="@drawable/ic_autorenew_white_24dp"
+        app:showAsAction="ifRoom">
+    </item>
+
+    <item
+        android:id="@+id/action_main_add"
+        android:orderInCategory="200"
         android:title="Add Group"
         android:icon="@drawable/ic_add_white_24dp"
         app:showAsAction="ifRoom">
@@ -14,7 +22,7 @@
 
     <item
         android:id="@+id/action_main_settings"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:title="Settings"
         android:icon="@drawable/ic_account_circle_white_24dp"
         app:showAsAction="ifRoom">

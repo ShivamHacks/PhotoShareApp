@@ -3,13 +3,9 @@ package com.example.shivamagrawal.photoshareapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.telephony.SmsManager;
 import android.view.View;
-import android.widget.Button;
 import android.content.Intent;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.app.Activity;
 
 import mehdi.sakout.fancybuttons.FancyButton;
 
@@ -32,8 +28,8 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent logIn = new Intent(context, LoginActivity.class);
-                startActivity(logIn);
                 finish();
+                startActivity(logIn);
             }
         });
 
@@ -41,8 +37,8 @@ public class LoginOrSignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent signUp = new Intent(context, SignUpActivity.class);
-                startActivity(signUp);
                 finish();
+                startActivity(signUp);
             }
         });
     }

@@ -71,8 +71,6 @@ public class Server {
         };
     }
 
-    // TODO: deal with null response listeners
-
     public static void makeRequest(Context context, StringRequest sr) {
         RequestQueue queue = Volley.newRequestQueue(context);
         queue.add(sr);

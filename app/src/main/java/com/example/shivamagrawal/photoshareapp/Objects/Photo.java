@@ -17,6 +17,8 @@ public class Photo implements Parcelable {
     private String capturedAt;
     private String capturedBy;
 
+    private long capturedAtNum;
+
     private Context context;
     private List<Contact> contacts;
 
@@ -30,6 +32,7 @@ public class Photo implements Parcelable {
 
         try {
             url = photo.getString("url");
+            capturedAtNum = photo.getLong("capturedAt");
             capturedAt = getDate(photo.getLong("capturedAt"));
             capturedBy = getContact(photo.getString("capturedBy"));
         } catch (JSONException e) {
@@ -47,6 +50,8 @@ public class Photo implements Parcelable {
     public String getUrl() { return url; }
     public String getCapturedAt() { return capturedAt; }
     public String getCapturedBy() { return capturedBy; }
+
+    public long getCapturedAtNum() { return capturedAtNum; }
 
     private String getContact(String number) {
         for (Contact c: contacts) {

@@ -47,17 +47,4 @@
         android:id="@+id/login_submit"
         fancy:fb_text="Submit" />
 
-    <EditText
-        android:id="@+id/login_verification_code"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Verification Code"
-        android:inputType="number" />
-
-    <mehdi.sakout.fancybuttons.FancyButton
-        style="@style/fancy_button"
-        android:id="@+id/login_verify"
-        fancy:fb_text="Verify" />
-
 </LinearLayout>
